@@ -84,6 +84,37 @@ export function resolveEmotion(input?: string | null): EmotionTheme {
   return EMOTION_THEMES[normalized] ?? EMOTION_THEMES[DEFAULT_EMOTION];
 }
 
+/**
+ * Map any backend stress-level key to a short display label + color tier.
+ * Supports both v2.2 labels (light/elevated/intense/urgent) and legacy
+ * labels (low/mid-low/mid-high/high).
+ */
+export type StressTier = 'low' | 'medium-low' | 'medium-high' | 'high';
+
+export interface StressLevelDisplay {
+  tier: StressTier;
+  label: string;
+  color: string;
+  tint: string;
+}
+
+const STRESS_TIERS: Record<StressTier, StressLevelDisplay> = {
+  'low':         { tier: 'low',         label: 'Low',         color: '#34d399', tint: 'rgba(52,211,153,0.12)' },
+  'medium-low':  { tier: 'medium-low',  label: 'Medium-Low',  color: '#facc15', tint: 'rgba(250,204,21,0.14)' },
+  'medium-high': { tier: 'medium-high', label: 'Medium-High', color: '#fb923c', tint: 'rgba(251,146,60,0.14)' },
+  'high':        { tier: 'high',        label: 'High',        color: '#fb7185', tint: 'rgba(251,113,133,0.16)' },
+};
+
+export function resolveStressLevel(input?: string | null): StressLevelDisplay {
+  if (!input) return STRESS_TIERS['low'];
+  const k = input.toLowerCase();
+  if (k === 'light' || k === 'low') return STRESS_TIERS['low'];
+  if (k === 'elevated' || k === 'mid-low' || k === 'medium-low') return STRESS_TIERS['medium-low'];
+  if (k === 'intense' || k === 'mid-high' || k === 'medium-high') return STRESS_TIERS['medium-high'];
+  if (k === 'urgent' || k === 'high') return STRESS_TIERS['high'];
+  return STRESS_TIERS['low'];
+}
+
 export function emotionCssVars(theme: EmotionTheme): React.CSSProperties {
   return {
     ['--accent' as string]: theme.accent,

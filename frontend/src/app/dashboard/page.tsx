@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { resolveEmotion } from '@/lib/emotion-theme';
+import { resolveEmotion, resolveStressLevel } from '@/lib/emotion-theme';
 import {
   createConversation,
   getMoodHistory,
@@ -110,7 +110,20 @@ export default function DashboardPage() {
   }, [loadProfile, router]);
 
   const theme = resolveEmotion(profile?.emotionalProfile);
+  const stress = resolveStressLevel(profile?.stressLevel);
   const firstName = user?.firstName || user?.username || 'friend';
+  const isOverwhelmed = (profile?.emotionalProfile ?? '').toLowerCase() === 'overwhelmed';
+  const heroTitle = isOverwhelmed
+    ? 'Your Overwhelmed recovery path'
+    : profile?.primaryTool?.name ?? 'Box Breathing';
+  const heroDescription = isOverwhelmed
+    ? 'A six-step ritual to settle your body, empty your head, and take one small action. Tuned to your current stress level — you can pause any time.'
+    : profile?.primaryTool?.description ??
+      'A short, deterministic calm ritual designed for your current state.';
+  const heroCtaLabel = isOverwhelmed
+    ? 'Start recovery path'
+    : `Start session · ${profile?.primaryTool?.duration ?? 3} min`;
+  const heroCtaHref = isOverwhelmed ? '/recovery/overwhelmed' : '/tools';
 
   const moodSeries = useMemo(() => buildMoodSeries(moodLogs), [moodLogs]);
   const streak = useMemo(() => computeStreak(entries, moodLogs), [entries, moodLogs]);
@@ -203,20 +216,36 @@ export default function DashboardPage() {
             />
             <div className="relative flex items-start justify-between">
               <div>
-                <Badge
-                  variant="outline"
-                  className="gap-1.5"
-                  style={{ color: theme.accent, borderColor: `${theme.accent}55` }}
-                >
-                  <span className="text-base leading-none">{theme.icon}</span>
-                  {theme.label} pathway
-                </Badge>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge
+                    variant="outline"
+                    className="gap-1.5"
+                    style={{ color: theme.accent, borderColor: `${theme.accent}55` }}
+                  >
+                    <span className="text-base leading-none">{theme.icon}</span>
+                    {theme.label}
+                  </Badge>
+                  <span
+                    className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[0.7rem] font-medium"
+                    style={{
+                      color: stress.color,
+                      borderColor: `${stress.color}55`,
+                      background: stress.tint,
+                    }}
+                    aria-label={`Stress level: ${stress.label}`}
+                  >
+                    <span
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{ background: stress.color, boxShadow: `0 0 6px ${stress.color}` }}
+                    />
+                    {stress.label} stress
+                  </span>
+                </div>
                 <h2 className="mt-4 max-w-xl text-balance text-2xl font-semibold tracking-tight sm:text-3xl">
-                  {profile?.primaryTool?.name ?? 'Box Breathing'}
+                  {heroTitle}
                 </h2>
                 <p className="mt-2 max-w-xl text-[color:var(--color-fg-muted)]">
-                  {profile?.primaryTool?.description ??
-                    'A short, deterministic calm ritual designed for your current state.'}
+                  {heroDescription}
                 </p>
               </div>
               <button
@@ -232,11 +261,11 @@ export default function DashboardPage() {
               <Button
                 variant="primary"
                 size="lg"
-                onClick={() => router.push('/tools')}
+                onClick={() => router.push(heroCtaHref)}
                 className="shadow-lg"
               >
                 <Play className="h-4 w-4" />
-                Start session · {profile?.primaryTool?.duration ?? 3} min
+                {heroCtaLabel}
               </Button>
               <div className="flex flex-wrap gap-2">
                 {(profile?.tools ?? []).slice(0, 3).map((t) => (
@@ -429,7 +458,7 @@ export default function DashboardPage() {
               <QuickAction
                 icon={LifeBuoy}
                 label="Crisis SOS"
-                sub="999 · 111 · Samaritans"
+                sub="Instant access to crisis help"
                 accent="#fb7185"
                 onClick={() => router.push('/sos')}
                 danger

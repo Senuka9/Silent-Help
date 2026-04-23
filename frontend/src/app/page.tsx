@@ -22,14 +22,14 @@ const FEATURES = [
     icon: Shield,
     title: 'Privacy by architecture',
     body:
-      'AES-256-GCM field encryption, PII scrubbing before any AI call, UK data sovereignty by default.',
+      'AES-256-GCM field encryption, PII scrubbing before any AI call, and strict data sovereignty by default.',
     accent: '#a78bfa',
   },
   {
     icon: Heart,
     title: 'Crisis-aware safety net',
     body:
-      'Dual-gate detection swaps in Clinical Safety Cards the instant risk is found. One tap to 999, 111, or Samaritans.',
+      'Dual-gate detection swaps in Clinical Safety Cards the instant risk is found. One tap to reach trusted crisis support.',
     accent: '#fb7185',
   },
   {
@@ -45,14 +45,14 @@ const METRICS = [
   { value: '<1.5s', label: 'HIGH pathway load' },
   { value: '<60s', label: 'Time to calm' },
   { value: 'AES-256', label: 'Field encryption' },
-  { value: 'GDPR', label: 'UK-compliant' },
+  { value: 'GDPR', label: 'Privacy-first' },
 ];
 
-const CRISIS_LINES = [
-  { label: '999', sub: 'Emergency' },
-  { label: '111', sub: 'NHS 111' },
-  { label: '116 123', sub: 'Samaritans' },
-  { label: 'SHOUT to 85258', sub: 'Text support' },
+const CRISIS_FEATURES = [
+  { label: 'Instant routing', sub: 'Opens in <1.5s' },
+  { label: 'Offline-first', sub: 'Works without a connection' },
+  { label: 'Geo-aware', sub: 'Lines for your region' },
+  { label: 'Zero AI in crisis', sub: 'Verified resources only' },
 ];
 
 export default function Home() {
@@ -136,7 +136,7 @@ export default function Home() {
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.12 }}
           className="mt-6 max-w-xl text-lg leading-relaxed text-[color:var(--color-fg-muted)] sm:text-xl"
         >
-          Silent Help is a mental health companion built for UK users. Pathway-aware support, encrypted
+          Silent Help is a mental health companion that stays quiet until you need it. Pathway-aware support, encrypted
           journalling, and a dual-gate safety net — all designed to get you to calm in under a minute.
         </motion.p>
 
@@ -272,7 +272,7 @@ export default function Home() {
                 Crisis? Tap and we route instantly.
               </Badge>
               <h2 className="text-balance text-3xl font-semibold sm:text-4xl">
-                UK-specific support, <span className="font-display italic">one tap away.</span>
+                Crisis support, <span className="font-display italic">one tap away.</span>
               </h2>
               <p className="mt-4 max-w-md text-[color:var(--color-fg-muted)]">
                 Our SOS pathway is offline-first, pre-rendered and opens in under 1.5 seconds. No
@@ -289,7 +289,7 @@ export default function Home() {
               </Button>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              {CRISIS_LINES.map((line) => (
+              {CRISIS_FEATURES.map((line) => (
                 <div
                   key={line.label}
                   className="group rounded-2xl border border-white/10 bg-white/[0.02] p-4 transition-all hover:border-white/25 hover:bg-white/[0.06]"
@@ -314,9 +314,9 @@ export default function Home() {
             <span>Silent Help · Private mental-health companion</span>
           </div>
           <div className="flex items-center gap-6">
-            <span>GDPR · DPA 2018</span>
+            <span>GDPR-ready</span>
             <span>AES-256</span>
-            <span>UK eu-west-2</span>
+            <span>Privacy by design</span>
           </div>
         </div>
       </footer>

@@ -21,6 +21,7 @@ import {
   type EmotionKey,
 } from '@/lib/emotion-theme';
 import { cn } from '@/lib/cn';
+import { detectCountry, getCountryResources } from '@/lib/crisis-resources';
 
 /* --- Types --- */
 interface AssessmentQuestion {
@@ -583,23 +584,22 @@ export default function OnboardingFlow() {
                       Immediate Support
                     </p>
                     <div className="mt-3 space-y-2">
-                      {[
-                        { icon: Phone, name: 'Samaritans', detail: '116 123 · free, 24/7' },
-                        { icon: MessageCircle, name: 'SHOUT', detail: 'Text SHOUT to 85258' },
-                        { icon: Phone, name: 'NHS 111', detail: '111 · mental health option' },
-                      ].map((r, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center gap-2.5 text-sm text-[color:var(--color-fg-muted)]"
-                        >
-                          <r.icon
-                            className="h-3.5 w-3.5 flex-shrink-0"
-                            style={{ color: cfg.accentColor }}
-                          />
-                          <span className="font-semibold text-[color:var(--color-fg)]">{r.name}</span>
-                          <span className="opacity-80">— {r.detail}</span>
-                        </div>
-                      ))}
+                      {getCountryResources(detectCountry()).resources.slice(0, 3).map((r) => {
+                        const Icon = r.mode === 'text' ? MessageCircle : Phone;
+                        return (
+                          <div
+                            key={r.key}
+                            className="flex items-center gap-2.5 text-sm text-[color:var(--color-fg-muted)]"
+                          >
+                            <Icon
+                              className="h-3.5 w-3.5 flex-shrink-0"
+                              style={{ color: cfg.accentColor }}
+                            />
+                            <span className="font-semibold text-[color:var(--color-fg)]">{r.title}</span>
+                            <span className="opacity-80">— {r.description}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

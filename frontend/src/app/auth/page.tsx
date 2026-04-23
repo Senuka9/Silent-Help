@@ -53,7 +53,26 @@ function AuthForms() {
   );
 
   useEffect(() => {
-    if (!isSignedIn) return;
+    if (!isSignedIn) {
+      // Auto-resume for existing guests: if the user already has a guest
+      // name stored AND just completed the onboarding flow, submit the
+      // pending assessment immediately so the dashboard reflects their new
+      // answers instead of a stale cached profile.
+      if (typeof window === 'undefined') return;
+      const guestName = localStorage.getItem('sh_guest_name');
+      const hasPending = !!localStorage.getItem('sh_pending_assessment');
+      if (guestName && hasPending) {
+        (async () => {
+          const guestToken =
+            localStorage.getItem('sh_guest_token') ||
+            (await provisionGuestAuth()) ||
+            undefined;
+          await checkAndSubmitPending({ token: guestToken || undefined, isGuest: true });
+          router.replace('/dashboard');
+        })();
+      }
+      return;
+    }
     (async () => {
       const token = await getToken();
       // Consent gate: if the signed-in user has not given Art 9 consent yet,

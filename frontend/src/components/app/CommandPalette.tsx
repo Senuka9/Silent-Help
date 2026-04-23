@@ -82,7 +82,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             <Command.Group heading="Urgent" className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.2em] [&_[cmdk-group-heading]]:text-[color:var(--color-fg-subtle)]">
               <Item
                 icon={LifeBuoy}
-                label="Crisis SOS — open UK resources"
+                label="Crisis SOS — open crisis resources"
                 onSelect={() => go('/sos')}
                 danger
               />
