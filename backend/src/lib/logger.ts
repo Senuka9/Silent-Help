@@ -30,13 +30,15 @@ export const logger = pino({
         service: 'silent-help-backend',
         env: process.env.NODE_ENV || 'development',
     },
-    transport:
-        process.env.NODE_ENV !== 'production'
-            ? {
-                  target: 'pino-pretty',
-                  options: { colorize: true, singleLine: true, translateTime: 'HH:MM:ss' },
-              }
-            : undefined,
+    // Fix: Removed pino-pretty transport as it causes Next.js worker crash errors
+    // during fast-refresh module reloading.
+    // transport:
+    //    process.env.NODE_ENV !== 'production'
+    //        ? {
+    //              target: 'pino-pretty',
+    //              options: { colorize: true, singleLine: true, translateTime: 'HH:MM:ss' },
+    //          }
+    //        : undefined,
 });
 
 /**
