@@ -112,18 +112,29 @@ export default function DashboardPage() {
   const theme = resolveEmotion(profile?.emotionalProfile);
   const stress = resolveStressLevel(profile?.stressLevel);
   const firstName = user?.firstName || user?.username || 'friend';
-  const isOverwhelmed = (profile?.emotionalProfile ?? '').toLowerCase() === 'overwhelmed';
+  const emotionKey = (profile?.emotionalProfile ?? '').toLowerCase();
+  const isOverwhelmed = emotionKey === 'overwhelmed';
+  const isAnxious = emotionKey === 'anxious';
+  const hasRecoveryPath = isOverwhelmed || isAnxious;
   const heroTitle = isOverwhelmed
     ? 'Your Overwhelmed recovery path'
-    : profile?.primaryTool?.name ?? 'Box Breathing';
+    : isAnxious
+      ? 'Your Anxious recovery path'
+      : profile?.primaryTool?.name ?? 'Box Breathing';
   const heroDescription = isOverwhelmed
     ? 'A six-step ritual to settle your body, empty your head, and take one small action. Tuned to your current stress level — you can pause any time.'
-    : profile?.primaryTool?.description ??
-      'A short, deterministic calm ritual designed for your current state.';
-  const heroCtaLabel = isOverwhelmed
+    : isAnxious
+      ? 'Four steps to interrupt the alarm, untwist the thought, schedule the worry, and take one tiny brave step. Tuned to your stress level.'
+      : profile?.primaryTool?.description ??
+        'A short, deterministic calm ritual designed for your current state.';
+  const heroCtaLabel = hasRecoveryPath
     ? 'Start recovery path'
     : `Start session · ${profile?.primaryTool?.duration ?? 3} min`;
-  const heroCtaHref = isOverwhelmed ? '/recovery/overwhelmed' : '/tools';
+  const heroCtaHref = isOverwhelmed
+    ? '/recovery/overwhelmed'
+    : isAnxious
+      ? '/recovery/anxious'
+      : '/tools';
 
   const moodSeries = useMemo(() => buildMoodSeries(moodLogs), [moodLogs]);
   const streak = useMemo(() => computeStreak(entries, moodLogs), [entries, moodLogs]);

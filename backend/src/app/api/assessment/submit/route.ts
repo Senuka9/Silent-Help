@@ -321,6 +321,11 @@ export async function POST(req: NextRequest) {
         });
     } catch (error) {
         console.error('Submit assessment error:', error);
-        return NextResponse.json({ error: 'Failed' }, { status: 500 });
+        const message = error instanceof Error ? error.message : String(error);
+        const stack = error instanceof Error ? error.stack : undefined;
+        return NextResponse.json(
+            { error: 'Failed', detail: message, stack: process.env.NODE_ENV === 'production' ? undefined : stack },
+            { status: 500 },
+        );
     }
 }

@@ -143,8 +143,8 @@ export default function ConsentGate() {
           <p className="mt-4 max-w-xl text-[color:var(--color-fg-muted)]">
             Silent Help is a <strong className="text-[color:var(--color-fg)]">wellness companion</strong>,
             not a medical device, not a diagnosis, not a replacement for therapy. Your mood and
-            journal entries are special-category personal data under UK and EU GDPR, so we need
-            your explicit permission to store and process them.
+            journal entries are sensitive personal data, so we need your explicit
+            permission to store and process them.
           </p>
 
           <form onSubmit={handleSubmit} className="mt-10 space-y-8">
@@ -172,9 +172,8 @@ export default function ConsentGate() {
               </div>
               {tooYoung && (
                 <div className="mt-3 rounded-lg border border-rose-400/40 bg-rose-400/10 p-3 text-sm text-rose-200">
-                  Silent Help is only available to people aged {MIN_AGE} or over. If you are in crisis
-                  please contact a trusted adult or a helpline: Samaritans <strong>116 123</strong>,
-                  Childline <strong>0800 1111</strong>.
+                  Silent Help is only available to people aged {MIN_AGE} or over. If you are in
+                  crisis please contact a trusted adult or a local helpline in your country.
                 </div>
               )}
               {isChild && (
@@ -182,7 +181,7 @@ export default function ConsentGate() {
                   <div className="font-medium">Safer-by-default mode will be enabled.</div>
                   Because you are under 18, Silent Help will only use on-device and self-hosted AI
                   (no third-party AI vendor ever sees your words), and telemetry is minimised — in
-                  line with the ICO Children&apos;s Code.
+                  line with best-practice safeguards for minors.
                 </div>
               )}
             </section>
@@ -194,7 +193,7 @@ export default function ConsentGate() {
                 2 · How long should we keep your entries?
               </div>
               <p className="mt-2 text-xs text-[color:var(--color-fg-subtle)]">
-                UK GDPR requires a defined retention period. You can change this any time in
+                We keep your data only as long as you choose. You can change this any time in
                 Settings → Data.
               </p>
               <div className="mt-4 grid gap-3">
@@ -236,10 +235,9 @@ export default function ConsentGate() {
                   className="mt-1 h-4 w-4 rounded border-white/20 bg-white/5"
                 />
                 <span className="text-[color:var(--color-fg-muted)]">
-                  I give my explicit consent to Silent Help to process my special-category data
-                  (mood, journal, chat) under <strong>Article 9(2)(a) UK &amp; EU GDPR</strong> for the sole
-                  purpose of providing me with wellness support. I can withdraw this consent and
-                  delete everything at any time.
+                  I give my explicit consent to Silent Help to process my sensitive wellness data
+                  (mood, journal, chat) for the sole purpose of providing me with wellness support.
+                  I can withdraw this consent and delete everything at any time.
                 </span>
               </label>
 
@@ -277,8 +275,8 @@ export default function ConsentGate() {
 
             <div className="flex items-center justify-between">
               <span className="text-xs text-[color:var(--color-fg-subtle)]">
-                In crisis now? Call <strong>999</strong> (UK) or <strong>112</strong> (EU) ·
-                Samaritans <strong>116 123</strong> · Shout text <strong>85258</strong>.
+                In crisis now? Contact your local emergency services or a trusted helpline.
+                You are not alone.
               </span>
               <Button type="submit" disabled={!canSubmit} className="min-w-[180px]">
                 {submitting ? 'Saving…' : 'Continue'}
