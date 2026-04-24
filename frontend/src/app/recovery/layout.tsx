@@ -6,27 +6,25 @@
  * full-screen immersive animations.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 
 export default function RecoveryLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const { isSignedIn, isLoaded } = useUser();
-    const [ready, setReady] = useState(false);
+    const isGuest =
+        typeof window !== 'undefined' && !!localStorage.getItem('sh_guest_name');
+    const isAllowed = isSignedIn || isGuest;
 
     useEffect(() => {
         if (!isLoaded) return;
-        const isGuest =
-            typeof window !== 'undefined' && !!localStorage.getItem('sh_guest_name');
-        if (!isSignedIn && !isGuest) {
+        if (!isAllowed) {
             router.replace('/auth/login');
-            return;
         }
-        setReady(true);
-    }, [isLoaded, isSignedIn, router]);
+    }, [isAllowed, isLoaded, router]);
 
-    if (!isLoaded || !ready) {
+    if (!isLoaded || !isAllowed) {
         return (
             <div className="flex min-h-screen items-center justify-center">
                 <div className="loading-dots" aria-label="Loading">

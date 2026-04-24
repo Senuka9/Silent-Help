@@ -8,7 +8,7 @@
  * If nothing in "now" and high stress → offer a rest path.
  */
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, AlertTriangle, Clock, EyeOff, Moon } from 'lucide-react';
 import { type BrainDumpItem, detectNotInControl } from '@/lib/recovery-overwhelmed';

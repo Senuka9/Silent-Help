@@ -21,23 +21,30 @@ export function StepDone({
     onJournal: () => void;
 }) {
     const { tipp, untwist, contain, plan } = session;
+    const embers = Array.from({ length: 18 }, (_, i) => {
+        const y = -80 - ((i * 23) % 120);
+        const xStart = (i - 9) * 11;
+        const xEnd = xStart * 2.2;
+        const delay = 0.1 + (i % 9) * 0.1;
+        return { id: i, y, xStart, xEnd, delay };
+    });
 
     return (
         <div className="relative flex min-h-screen flex-col items-center justify-center px-6 py-14">
             {/* Ember-to-spark confetti */}
-            {Array.from({ length: 18 }).map((_, i) => (
+            {embers.map((e) => (
                 <motion.div
-                    key={i}
+                    key={e.id}
                     initial={{ opacity: 0, y: 0, x: 0, scale: 0 }}
                     animate={{
                         opacity: [0, 1, 0],
-                        y: [0, -80 - Math.random() * 120],
-                        x: [(Math.random() - 0.5) * 200, (Math.random() - 0.5) * 500],
+                        y: [0, e.y],
+                        x: [e.xStart, e.xEnd],
                         scale: [0, 1, 0.4],
                     }}
                     transition={{
                         duration: 2.4,
-                        delay: 0.1 + Math.random() * 0.9,
+                        delay: e.delay,
                         ease: 'easeOut',
                     }}
                     className="absolute h-2 w-2 rounded-full"

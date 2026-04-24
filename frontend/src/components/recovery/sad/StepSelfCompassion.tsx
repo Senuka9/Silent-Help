@@ -193,7 +193,6 @@ function PhrasePicker({
 function Typewriter({ text, className }: { text: string; className?: string }) {
     const [shown, setShown] = useState('');
     useEffect(() => {
-        setShown('');
         let i = 0;
         const id = window.setInterval(() => {
             i += 1;

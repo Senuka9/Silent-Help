@@ -149,25 +149,17 @@ export interface RecoveryControls {
 }
 
 export function useRecoveryOverwhelmed(bucket: StressBucket): RecoveryControls {
+    const storedOnMount = readStored();
     const [state, setState] = useState<RecoveryOverwhelmedState>(() => defaultState(bucket));
-    const [hasResume, setHasResume] = useState(false);
-    const [hydrated, setHydrated] = useState(false);
+    const [hasResume, setHasResume] = useState(
+        !!storedOnMount && storedOnMount.currentStep < 4,
+    );
 
-    // First-mount hydration
+    // Persist on change, but don't overwrite cached resume before user chooses.
     useEffect(() => {
-        const stored = readStored();
-        if (stored && stored.currentStep < 4) {
-            // mid-path, worth resuming
-            setHasResume(true);
-        }
-        setHydrated(true);
-    }, []);
-
-    // Persist on change (after hydration)
-    useEffect(() => {
-        if (!hydrated) return;
+        if (hasResume) return;
         writeStored(state);
-    }, [state, hydrated]);
+    }, [state, hasResume]);
 
     const update = useCallback((patch: Partial<RecoveryOverwhelmedState>) => {
         setState((prev) => ({ ...prev, ...patch, updatedAt: nowIso() }));
