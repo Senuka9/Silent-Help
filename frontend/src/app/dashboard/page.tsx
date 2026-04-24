@@ -116,22 +116,27 @@ export default function DashboardPage() {
   const isOverwhelmed = emotionKey === 'overwhelmed';
   const isAnxious = emotionKey === 'anxious';
   const isFrustrated = emotionKey === 'frustrated';
-  const hasRecoveryPath = isOverwhelmed || isAnxious || isFrustrated;
+  const isSad = emotionKey === 'sad';
+  const hasRecoveryPath = isOverwhelmed || isAnxious || isFrustrated || isSad;
   const heroTitle = isOverwhelmed
     ? 'Your Overwhelmed recovery path'
     : isAnxious
       ? 'Your Anxious recovery path'
       : isFrustrated
         ? 'Your Frustrated recovery path'
-        : profile?.primaryTool?.name ?? 'Box Breathing';
+        : isSad
+          ? 'Your Sad recovery path'
+          : profile?.primaryTool?.name ?? 'Box Breathing';
   const heroDescription = isOverwhelmed
     ? 'A six-step ritual to settle your body, empty your head, and take one small action. Tuned to your current stress level — you can pause any time.'
     : isAnxious
       ? 'Four steps to interrupt the alarm, untwist the thought, schedule the worry, and take one tiny brave step. Tuned to your stress level.'
       : isFrustrated
         ? 'Four active steps — trap the heat, untwist the narrative, contain the trigger, and lock in an If-Then plan. Physical release built in.'
-        : profile?.primaryTool?.description ??
-          'A short, deterministic calm ritual designed for your current state.';
+        : isSad
+          ? 'Six gentle steps — notice the body, soften the story, savor one tiny good thing, take one micro-action, be your own friend, and point at what still matters. Nothing here is timed.'
+          : profile?.primaryTool?.description ??
+            'A short, deterministic calm ritual designed for your current state.';
   const heroCtaLabel = hasRecoveryPath
     ? 'Start recovery path'
     : `Start session · ${profile?.primaryTool?.duration ?? 3} min`;
@@ -141,7 +146,9 @@ export default function DashboardPage() {
       ? '/recovery/anxious'
       : isFrustrated
         ? '/recovery/frustrated'
-        : '/tools';
+        : isSad
+          ? '/recovery/sad'
+          : '/tools';
 
   const moodSeries = useMemo(() => buildMoodSeries(moodLogs), [moodLogs]);
   const streak = useMemo(() => computeStreak(entries, moodLogs), [entries, moodLogs]);
