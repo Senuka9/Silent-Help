@@ -200,7 +200,6 @@ function KnotToBow({
     const [held, setHeld] = useState(saidOutLoud);
     const [progress, setProgress] = useState(0);
     const holdStart = useRef<number | null>(null);
-    const waveformHeights = Array.from({ length: 12 }, (_, i) => 16 + ((i * 5) % 12));
 
     useEffect(() => {
         if (!holding) return;
@@ -288,12 +287,12 @@ function KnotToBow({
                 {/* Waveform while holding */}
                 {holding && (
                     <div className="absolute inset-x-0 -bottom-4 flex items-center justify-center gap-1">
-                        {waveformHeights.map((peak, i) => (
+                        {Array.from({ length: 12 }).map((_, i) => (
                             <motion.div
                                 key={i}
                                 className="w-1 rounded-full"
                                 style={{ backgroundColor: accent }}
-                                animate={{ height: [4, peak, 4] }}
+                                animate={{ height: [4, 16 + Math.random() * 12, 4] }}
                                 transition={{
                                     duration: 0.45,
                                     repeat: Infinity,

@@ -24,12 +24,13 @@ export default function StepBrainDump({
     onSubmit: (text: string) => void;
 }) {
     const [text, setText] = useState(initialText);
-    const [shaking, setShaking] = useState(true);
+    const [shaking, setShaking] = useState(false);
     const [shrinking, setShrinking] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
         // Attention-grab gentle shake on mount
+        setShaking(true);
         const t = window.setTimeout(() => setShaking(false), 700);
         return () => window.clearTimeout(t);
     }, []);

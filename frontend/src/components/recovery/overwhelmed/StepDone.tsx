@@ -33,11 +33,11 @@ export default function StepDone({
     const confetti = useMemo(() => {
         return Array.from({ length: 28 }).map((_, i) => ({
             id: i,
-            x: (i * 37) % 100,
-            delay: (i % 8) * 0.1,
-            duration: 1.6 + (i % 7) * 0.2,
-            rotate: (i * 47) % 360,
-            size: 10 + (i % 6) * 1.2,
+            x: Math.random() * 100,
+            delay: Math.random() * 0.8,
+            duration: 1.6 + Math.random() * 1.4,
+            rotate: Math.random() * 360,
+            size: 10 + Math.random() * 8,
         }));
     }, []);
 

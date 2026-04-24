@@ -412,6 +412,7 @@ function MuscleTension({ onDone }: { onDone: () => void }) {
 
     useEffect(() => {
         if (sub === null) return;
+        const total = sub === 'tense' ? 5 : 8;
         if (secs <= 0) {
             if (sub === 'tense') {
                 setSub('release');
@@ -700,9 +701,7 @@ function QuickDischarge({ onDone }: { onDone: (taps: number) => void }) {
     const [left, setLeft] = useState(DURATION);
     const [taps, setTaps] = useState(0);
     const [running, setRunning] = useState(false);
-    const [sparks, setSparks] = useState<
-        { id: number; x: number; y: number; dx: number; dy: number }[]
-    >([]);
+    const [sparks, setSparks] = useState<{ id: number; x: number; y: number }[]>([]);
     const nextSparkId = useRef(1);
     const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -727,10 +726,7 @@ function QuickDischarge({ onDone }: { onDone: (taps: number) => void }) {
         const x = point.clientX - rect.left;
         const y = point.clientY - rect.top;
         const id = nextSparkId.current++;
-        const seed = id * 31;
-        const dx = ((seed % 200) - 100);
-        const dy = -100 - ((seed * 7) % 80);
-        setSparks((s) => [...s, { id, x, y, dx, dy }]);
+        setSparks((s) => [...s, { id, x, y }]);
         setTaps((n) => n + 1);
         window.setTimeout(
             () => setSparks((s) => s.filter((sp) => sp.id !== id)),
@@ -801,8 +797,8 @@ function QuickDischarge({ onDone }: { onDone: (taps: number) => void }) {
                             animate={{
                                 opacity: 0,
                                 scale: 2.5,
-                                x: s.x - 10 + s.dx,
-                                y: s.y - 10 + s.dy,
+                                x: s.x - 10 + (Math.random() - 0.5) * 200,
+                                y: s.y - 10 - 100 - Math.random() * 80,
                             }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.7, ease: 'easeOut' }}

@@ -155,16 +155,15 @@ function Intro({ onNext, accent }: { onNext: () => void; accent: string }) {
                     const row = Math.floor(i / 3);
                     const targetX = 40 + col * 120;
                     const targetY = 30 + row * 70;
-                    const chaosX = (i * 97) % 360;
-                    const chaosY = (i * 59) % 220;
-                    const chaosRotate = (i * 13) % 45;
+                    const chaosX = Math.random() * 360;
+                    const chaosY = Math.random() * 220;
                     return (
                         <motion.div
                             key={i}
                             initial={{
                                 x: chaosX,
                                 y: chaosY,
-                                rotate: chaosRotate,
+                                rotate: Math.random() * 45,
                                 opacity: 0.8,
                             }}
                             animate={

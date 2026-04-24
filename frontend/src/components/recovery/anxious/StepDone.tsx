@@ -21,30 +21,23 @@ export function StepDone({
     onJournal: () => void;
 }) {
     const { reframe, worry, brave, sensoryItems } = session;
-    const sparkles = Array.from({ length: 16 }, (_, i) => {
-        const y = -80 - ((i * 17) % 80);
-        const xStart = (i - 8) * 12;
-        const xEnd = xStart * 1.8;
-        const delay = 0.1 + (i % 8) * 0.1;
-        return { id: i, y, xStart, xEnd, delay };
-    });
 
     return (
         <div className="relative flex min-h-screen flex-col items-center justify-center px-6 py-14">
             {/* Sparkle confetti */}
-            {sparkles.map((s) => (
+            {Array.from({ length: 16 }).map((_, i) => (
                 <motion.div
-                    key={s.id}
+                    key={i}
                     initial={{ opacity: 0, y: 0, x: 0, scale: 0 }}
                     animate={{
                         opacity: [0, 1, 0],
-                        y: [0, s.y],
-                        x: [s.xStart, s.xEnd],
+                        y: [0, -80 - Math.random() * 80],
+                        x: [(Math.random() - 0.5) * 200, (Math.random() - 0.5) * 400],
                         scale: [0, 1, 0.6],
                     }}
                     transition={{
                         duration: 2.2,
-                        delay: s.delay,
+                        delay: 0.1 + Math.random() * 0.8,
                         ease: 'easeOut',
                     }}
                     className="absolute"

@@ -238,7 +238,7 @@ function Flipped({
                                 opacity: 0,
                                 y: -40 - i * 10,
                                 x: (i - 2) * 30,
-                                rotate: ((i * 53) % 120) - 60,
+                                rotate: (Math.random() - 0.5) * 120,
                             }}
                             transition={{ duration: 1.2, delay: i * 0.05 }}
                             className="absolute left-1/2 top-0 h-1 w-8 rounded-full bg-red-400/70"

@@ -72,6 +72,10 @@ export default function AnxiousRecoveryPage() {
         if (session) saveSession(session);
     }, [session]);
 
+    const goToStep = useCallback((step: AnxiousStep) => {
+        setSession((s) => (s ? { ...s, currentStep: step } : s));
+    }, []);
+
     const restart = () => {
         clearSession();
         setSession(emptySession(stress.tier));
