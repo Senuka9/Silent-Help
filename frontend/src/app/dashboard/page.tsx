@@ -117,7 +117,8 @@ export default function DashboardPage() {
   const isAnxious = emotionKey === 'anxious';
   const isFrustrated = emotionKey === 'frustrated';
   const isSad = emotionKey === 'sad';
-  const hasRecoveryPath = isOverwhelmed || isAnxious || isFrustrated || isSad;
+  const isPressure = emotionKey === 'pressure';
+  const hasRecoveryPath = isOverwhelmed || isAnxious || isFrustrated || isSad || isPressure;
   const heroTitle = isOverwhelmed
     ? 'Your Overwhelmed recovery path'
     : isAnxious
@@ -126,7 +127,9 @@ export default function DashboardPage() {
         ? 'Your Frustrated recovery path'
         : isSad
           ? 'Your Sad recovery path'
-          : profile?.primaryTool?.name ?? 'Box Breathing';
+          : isPressure
+            ? 'Your Pressure recovery path'
+            : profile?.primaryTool?.name ?? 'Box Breathing';
   const heroDescription = isOverwhelmed
     ? 'A six-step ritual to settle your body, empty your head, and take one small action. Tuned to your current stress level — you can pause any time.'
     : isAnxious
@@ -135,8 +138,10 @@ export default function DashboardPage() {
         ? 'Four active steps — trap the heat, untwist the narrative, contain the trigger, and lock in an If-Then plan. Physical release built in.'
         : isSad
           ? 'Six gentle steps — notice the body, soften the story, savor one tiny good thing, take one micro-action, be your own friend, and point at what still matters. Nothing here is timed.'
-          : profile?.primaryTool?.description ??
-            'A short, deterministic calm ritual designed for your current state.';
+          : isPressure
+            ? 'Name the pressure, reset the body, flip the story, rename the fuel, sort the load, hear your teammate voice, and save a playbook for next time. Pressure is fuel — we direct it.'
+            : profile?.primaryTool?.description ??
+              'A short, deterministic calm ritual designed for your current state.';
   const heroCtaLabel = hasRecoveryPath
     ? 'Start recovery path'
     : `Start session · ${profile?.primaryTool?.duration ?? 3} min`;
@@ -148,7 +153,9 @@ export default function DashboardPage() {
         ? '/recovery/frustrated'
         : isSad
           ? '/recovery/sad'
-          : '/tools';
+          : isPressure
+            ? '/recovery/pressure'
+            : '/tools';
 
   const moodSeries = useMemo(() => buildMoodSeries(moodLogs), [moodLogs]);
   const streak = useMemo(() => computeStreak(entries, moodLogs), [entries, moodLogs]);
