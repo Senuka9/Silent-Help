@@ -24,7 +24,7 @@ interface ClerkWindow extends Window {
  * because `window.Clerk` hasn't been populated yet — every protected endpoint
  * then responds with 401 even though the user is actually signed in.
  */
-async function waitForClerk(timeoutMs = 1500): Promise<void> {
+async function waitForClerk(timeoutMs = 300): Promise<void> {
     if (typeof window === 'undefined') return;
     const clerkWin = window as unknown as ClerkWindow;
     const deadline = Date.now() + timeoutMs;

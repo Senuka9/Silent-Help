@@ -95,18 +95,21 @@ export default function DashboardPage() {
       setMoodLogs(m.logs ?? []);
       setEntries(j.entries ?? []);
     });
-    // Weekly digest + coach are best-effort; backend returns graceful fallbacks.
-    getWeeklyDigest()
-      .then((r) => setDigest(r.digest))
-      .catch(() => setDigest(null))
-      .finally(() => setDigestLoading(false));
-    suggestCoachAction()
-      .then((r) => setCoach(r.suggestion))
-      .catch(() => setCoach(null))
-      .finally(() => setCoachLoading(false));
-    getDailyAffirmation()
-      .then((r) => setAffirmation(r.affirmation))
-      .catch(() => setAffirmation(null));
+    // Defer AI-backed calls so they don't block initial render or navigation.
+    const aiTimer = window.setTimeout(() => {
+      getWeeklyDigest()
+        .then((r) => setDigest(r.digest))
+        .catch(() => setDigest(null))
+        .finally(() => setDigestLoading(false));
+      suggestCoachAction()
+        .then((r) => setCoach(r.suggestion))
+        .catch(() => setCoach(null))
+        .finally(() => setCoachLoading(false));
+      getDailyAffirmation()
+        .then((r) => setAffirmation(r.affirmation))
+        .catch(() => setAffirmation(null));
+    }, 1500);
+    return () => window.clearTimeout(aiTimer);
   }, [loadProfile, router]);
 
   const theme = resolveEmotion(profile?.emotionalProfile);
