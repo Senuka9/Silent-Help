@@ -292,7 +292,7 @@ function KnotToBow({
                                 key={i}
                                 className="w-1 rounded-full"
                                 style={{ backgroundColor: accent }}
-                                animate={{ height: [4, 16 + Math.random() * 12, 4] }}
+                                animate={{ height: [4, 16 + (i % 4) * 4, 4] }}
                                 transition={{
                                     duration: 0.45,
                                     repeat: Infinity,

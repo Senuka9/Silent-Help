@@ -11,7 +11,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, RotateCcw } from 'lucide-react';
+import { X, RotateCcw, SkipForward } from 'lucide-react';
 import { Aurora, NoiseOverlay } from '@/components/ui/aurora';
 import { useWellness } from '@/components/wellness/WellnessProvider';
 import {
@@ -72,10 +72,6 @@ export default function AnxiousRecoveryPage() {
         if (session) saveSession(session);
     }, [session]);
 
-    const goToStep = useCallback((step: AnxiousStep) => {
-        setSession((s) => (s ? { ...s, currentStep: step } : s));
-    }, []);
-
     const restart = () => {
         clearSession();
         setSession(emptySession(stress.tier));
@@ -85,6 +81,21 @@ export default function AnxiousRecoveryPage() {
     const exit = () => {
         router.push('/dashboard');
     };
+
+    const skipStep = useCallback(() => {
+        setSession((s) => {
+            if (!s) return s;
+            const idx = STEP_ORDER.indexOf(s.currentStep);
+            if (idx < 0 || s.currentStep === 'done') return s;
+            const next = STEP_ORDER[idx + 1] ?? 'done';
+            if (next === 'done') {
+                const n = incrementCompletions();
+                setCompletions(n);
+                window.setTimeout(clearSession, 1000);
+            }
+            return { ...s, currentStep: next };
+        });
+    }, []);
 
     const onJournal = useCallback(async () => {
         if (!session) return;
@@ -178,6 +189,17 @@ export default function AnxiousRecoveryPage() {
                         </span>
                     </div>
                     <div className="flex items-center gap-2">
+                        {session.currentStep !== 'done' && (
+                            <button
+                                onClick={skipStep}
+                                className="flex items-center gap-1 rounded-full px-2 py-1 text-xs text-white/50 transition hover:text-white/90"
+                                aria-label="Skip step"
+                                title="Skip this step"
+                            >
+                                <SkipForward className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline">Skip</span>
+                            </button>
+                        )}
                         <button
                             onClick={restart}
                             className="flex items-center gap-1 rounded-full px-2 py-1 text-xs text-white/50 transition hover:text-white/90"

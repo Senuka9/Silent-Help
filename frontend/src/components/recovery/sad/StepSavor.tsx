@@ -37,6 +37,7 @@ export function StepSavor({
     const [held, setHeld] = useState(initial.heldTeaCup);
     const [seconds, setSeconds] = useState(initial.heldSeconds);
     const pressing = useRef(false);
+    const [isPressing, setIsPressing] = useState(false);
     const lastTick = useRef<number | null>(null);
 
     const progress = useMotionValue(0);
@@ -50,7 +51,7 @@ export function StepSavor({
             const dt = (t - lastTick.current) / 1000;
             lastTick.current = t;
             setSeconds((prev) => {
-                let next = pressing.current
+                const next = pressing.current
                     ? Math.min(HOLD_SECONDS, prev + dt)
                     : Math.max(0, prev - dt * 0.6);
                 progress.set(next / HOLD_SECONDS);
@@ -116,12 +117,12 @@ export function StepSavor({
 
             {/* Teacup */}
             <div
-                onMouseDown={() => (pressing.current = true)}
-                onMouseUp={() => (pressing.current = false)}
-                onMouseLeave={() => (pressing.current = false)}
-                onTouchStart={() => (pressing.current = true)}
-                onTouchEnd={() => (pressing.current = false)}
-                onTouchCancel={() => (pressing.current = false)}
+                onMouseDown={() => { pressing.current = true; setIsPressing(true); }}
+                onMouseUp={() => { pressing.current = false; setIsPressing(false); }}
+                onMouseLeave={() => { pressing.current = false; setIsPressing(false); }}
+                onTouchStart={() => { pressing.current = true; setIsPressing(true); }}
+                onTouchEnd={() => { pressing.current = false; setIsPressing(false); }}
+                onTouchCancel={() => { pressing.current = false; setIsPressing(false); }}
                 className="relative flex h-72 w-72 cursor-pointer select-none items-center justify-center"
             >
                 <svg viewBox="0 0 110 110" className="absolute inset-0 -rotate-90">
@@ -206,7 +207,7 @@ export function StepSavor({
                         className="text-[11px] uppercase tracking-[0.3em]"
                         style={{ color: accent }}
                     >
-                        {held ? 'saved' : pressing.current ? 'holding' : 'press & hold'}
+                        {held ? 'saved' : isPressing ? 'holding' : 'press & hold'}
                     </div>
                     <div className="mt-0.5 text-xs text-white/55 tabular-nums">
                         {seconds.toFixed(1)}s / {HOLD_SECONDS}s

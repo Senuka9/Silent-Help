@@ -153,14 +153,16 @@ export function useRecoveryOverwhelmed(bucket: StressBucket): RecoveryControls {
     const [hasResume, setHasResume] = useState(false);
     const [hydrated, setHydrated] = useState(false);
 
-    // First-mount hydration
+    // First-mount hydration — defer state updates to avoid synchronous setState in effect body
     useEffect(() => {
         const stored = readStored();
-        if (stored && stored.currentStep < 4) {
-            // mid-path, worth resuming
-            setHasResume(true);
-        }
-        setHydrated(true);
+        const timer = window.setTimeout(() => {
+            if (stored && stored.currentStep < 4) {
+                setHasResume(true);
+            }
+            setHydrated(true);
+        }, 0);
+        return () => window.clearTimeout(timer);
     }, []);
 
     // Persist on change (after hydration)

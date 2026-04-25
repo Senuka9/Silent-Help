@@ -11,6 +11,13 @@ import { Home, BookOpen, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import type { AnxiousSession } from '@/lib/recovery-anxious';
 
+const CONFETTI = Array.from({ length: 16 }, (_, i) => ({
+    y: -80 - (i % 5) * 16,
+    x1: ((i % 8) - 4) * 25,
+    x2: ((i % 8) - 4) * 50,
+    delay: 0.1 + (i * 0.8) / 16,
+}));
+
 export function StepDone({
     session,
     accent,
@@ -25,19 +32,19 @@ export function StepDone({
     return (
         <div className="relative flex min-h-screen flex-col items-center justify-center px-6 py-14">
             {/* Sparkle confetti */}
-            {Array.from({ length: 16 }).map((_, i) => (
+            {CONFETTI.map((c, i) => (
                 <motion.div
                     key={i}
                     initial={{ opacity: 0, y: 0, x: 0, scale: 0 }}
                     animate={{
                         opacity: [0, 1, 0],
-                        y: [0, -80 - Math.random() * 80],
-                        x: [(Math.random() - 0.5) * 200, (Math.random() - 0.5) * 400],
+                        y: [0, c.y],
+                        x: [c.x1, c.x2],
                         scale: [0, 1, 0.6],
                     }}
                     transition={{
                         duration: 2.2,
-                        delay: 0.1 + Math.random() * 0.8,
+                        delay: c.delay,
                         ease: 'easeOut',
                     }}
                     className="absolute"

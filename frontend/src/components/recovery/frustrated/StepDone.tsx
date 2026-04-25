@@ -6,6 +6,7 @@
  * "I have a plan", "I am in control of my reaction."
  */
 
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Home, BookOpen, Zap } from 'lucide-react';
 import Link from 'next/link';
@@ -21,23 +22,29 @@ export function StepDone({
     onJournal: () => void;
 }) {
     const { tipp, untwist, contain, plan } = session;
+    const embers = useMemo(() => Array.from({ length: 18 }).map((_, i) => ({
+        y: -80 - (i % 5) * 24,
+        x1: ((i % 9) - 4) * 25,
+        x2: ((i % 9) - 4) * 55,
+        delay: 0.1 + (i * 0.9) / 18,
+    })), []);
 
     return (
         <div className="relative flex min-h-screen flex-col items-center justify-center px-6 py-14">
             {/* Ember-to-spark confetti */}
-            {Array.from({ length: 18 }).map((_, i) => (
+            {embers.map((e, i) => (
                 <motion.div
                     key={i}
                     initial={{ opacity: 0, y: 0, x: 0, scale: 0 }}
                     animate={{
                         opacity: [0, 1, 0],
-                        y: [0, -80 - Math.random() * 120],
-                        x: [(Math.random() - 0.5) * 200, (Math.random() - 0.5) * 500],
+                        y: [0, e.y],
+                        x: [e.x1, e.x2],
                         scale: [0, 1, 0.4],
                     }}
                     transition={{
                         duration: 2.4,
-                        delay: 0.1 + Math.random() * 0.9,
+                        delay: e.delay,
                         ease: 'easeOut',
                     }}
                     className="absolute h-2 w-2 rounded-full"

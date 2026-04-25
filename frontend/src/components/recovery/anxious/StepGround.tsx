@@ -495,21 +495,23 @@ function ProgressiveMuscleRelaxation({
     useEffect(() => {
         if (state === 'rest') return;
         if (secondsLeft <= 0) {
-            if (state === 'tense') {
-                setState('release');
-                setSecondsLeft(RELEASE_SEC);
-            } else {
-                // advance group
-                if (groupIdx + 1 >= PMR_GROUPS.length) {
-                    setState('rest');
-                    window.setTimeout(onDone, 800);
+            const t = window.setTimeout(() => {
+                if (state === 'tense') {
+                    setState('release');
+                    setSecondsLeft(RELEASE_SEC);
                 } else {
-                    setGroupIdx((i) => i + 1);
-                    setState('tense');
-                    setSecondsLeft(TENSE_SEC);
+                    // advance group
+                    if (groupIdx + 1 >= PMR_GROUPS.length) {
+                        setState('rest');
+                        window.setTimeout(onDone, 800);
+                    } else {
+                        setGroupIdx((i) => i + 1);
+                        setState('tense');
+                        setSecondsLeft(TENSE_SEC);
+                    }
                 }
-            }
-            return;
+            }, 0);
+            return () => window.clearTimeout(t);
         }
         const t = window.setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
         return () => window.clearTimeout(t);

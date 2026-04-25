@@ -378,7 +378,7 @@ function LoadBlock({ accent }: { accent: string }) {
                         animate={{
                             x: `calc(50% - 96px + ${col * 64}px)`,
                             y: row * 28,
-                            rotate: (Math.random() - 0.5) * 14,
+                            rotate: (i % 3 - 1) * 7,
                             opacity: 0.9,
                         }}
                         transition={{

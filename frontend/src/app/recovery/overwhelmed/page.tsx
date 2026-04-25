@@ -12,7 +12,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Sparkles, X } from 'lucide-react';
+import { ArrowLeft, Sparkles, X, SkipForward } from 'lucide-react';
 import { Aurora, NoiseOverlay } from '@/components/ui/aurora';
 import { resolveEmotion, emotionCssVars, resolveStressLevel } from '@/lib/emotion-theme';
 import { useWellness } from '@/components/wellness/WellnessProvider';
@@ -241,17 +241,30 @@ export default function OverwhelmedRecoveryPage() {
                     Overwhelmed pathway
                 </span>
 
-                <button
-                    onClick={() => {
-                        if (confirm('Exit this session? Your progress will be kept.')) {
-                            router.push('/dashboard');
-                        }
-                    }}
-                    className="rounded-full border border-white/10 bg-white/[0.03] p-2 text-[color:var(--color-fg-muted)] transition-colors hover:border-white/25 hover:text-[color:var(--color-fg)]"
-                    aria-label="Exit"
-                >
-                    <X className="h-3.5 w-3.5" />
-                </button>
+                <div className="flex items-center gap-2">
+                    {state.currentStep < 5 && (
+                        <button
+                            onClick={nextStep}
+                            className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-[color:var(--color-fg-muted)] backdrop-blur-md transition-colors hover:border-white/25 hover:text-[color:var(--color-fg)]"
+                            aria-label="Skip step"
+                            title="Skip this step"
+                        >
+                            <SkipForward className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">Skip</span>
+                        </button>
+                    )}
+                    <button
+                        onClick={() => {
+                            if (confirm('Exit this session? Your progress will be kept.')) {
+                                router.push('/dashboard');
+                            }
+                        }}
+                        className="rounded-full border border-white/10 bg-white/[0.03] p-2 text-[color:var(--color-fg-muted)] transition-colors hover:border-white/25 hover:text-[color:var(--color-fg)]"
+                        aria-label="Exit"
+                    >
+                        <X className="h-3.5 w-3.5" />
+                    </button>
+                </div>
             </header>
 
             {/* Progress + header */}

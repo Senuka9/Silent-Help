@@ -412,7 +412,6 @@ function MuscleTension({ onDone }: { onDone: () => void }) {
 
     useEffect(() => {
         if (sub === null) return;
-        const total = sub === 'tense' ? 5 : 8;
         if (secs <= 0) {
             if (sub === 'tense') {
                 setSub('release');
@@ -701,7 +700,7 @@ function QuickDischarge({ onDone }: { onDone: (taps: number) => void }) {
     const [left, setLeft] = useState(DURATION);
     const [taps, setTaps] = useState(0);
     const [running, setRunning] = useState(false);
-    const [sparks, setSparks] = useState<{ id: number; x: number; y: number }[]>([]);
+    const [sparks, setSparks] = useState<{ id: number; x: number; y: number; dx: number; dy: number }[]>([]);
     const nextSparkId = useRef(1);
     const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -726,7 +725,9 @@ function QuickDischarge({ onDone }: { onDone: (taps: number) => void }) {
         const x = point.clientX - rect.left;
         const y = point.clientY - rect.top;
         const id = nextSparkId.current++;
-        setSparks((s) => [...s, { id, x, y }]);
+        const dx = ((id * 73) % 200) - 100;
+        const dy = 100 + (id * 37) % 80;
+        setSparks((s) => [...s, { id, x, y, dx, dy }]);
         setTaps((n) => n + 1);
         window.setTimeout(
             () => setSparks((s) => s.filter((sp) => sp.id !== id)),
@@ -797,8 +798,8 @@ function QuickDischarge({ onDone }: { onDone: (taps: number) => void }) {
                             animate={{
                                 opacity: 0,
                                 scale: 2.5,
-                                x: s.x - 10 + (Math.random() - 0.5) * 200,
-                                y: s.y - 10 - 100 - Math.random() * 80,
+                                x: s.x - 10 + s.dx,
+                                y: s.y - 10 - s.dy,
                             }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.7, ease: 'easeOut' }}

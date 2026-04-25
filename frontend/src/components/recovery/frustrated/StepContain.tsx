@@ -137,6 +137,12 @@ function Pane({ children }: { children: React.ReactNode }) {
     );
 }
 
+const chaosParticles = Array.from({ length: 9 }, (_, i) => ({
+    x: (i * 41) % 360,
+    y: (i * 29) % 220,
+    r: (i * 17) % 45,
+}));
+
 function Intro({ onNext, accent }: { onNext: () => void; accent: string }) {
     const [organized, setOrganized] = useState(false);
     useEffect(() => {
@@ -150,20 +156,18 @@ function Intro({ onNext, accent }: { onNext: () => void; accent: string }) {
                 Watch the noise get put away. It&apos;s not gone — just set aside so we can breathe.
             </p>
             <div className="relative h-64 w-full">
-                {Array.from({ length: 9 }).map((_, i) => {
+                {chaosParticles.map((p, i) => {
                     const col = i % 3;
                     const row = Math.floor(i / 3);
                     const targetX = 40 + col * 120;
                     const targetY = 30 + row * 70;
-                    const chaosX = Math.random() * 360;
-                    const chaosY = Math.random() * 220;
                     return (
                         <motion.div
                             key={i}
                             initial={{
-                                x: chaosX,
-                                y: chaosY,
-                                rotate: Math.random() * 45,
+                                x: p.x,
+                                y: p.y,
+                                rotate: p.r,
                                 opacity: 0.8,
                             }}
                             animate={

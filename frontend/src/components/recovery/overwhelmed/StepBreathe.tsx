@@ -74,21 +74,19 @@ export default function StepBreathe({
     }, [bucket]);
 
     const [idx, setIdx] = useState(0);
-    const [done, setDone] = useState(false);
     const advanceRef = useRef<number | null>(null);
     const doneTriggeredRef = useRef(false);
 
+    const done = idx >= phases.length;
+
     useEffect(() => {
-        if (idx >= phases.length) {
-            setDone(true);
-            return;
-        }
+        if (done) return;
         const t = window.setTimeout(() => setIdx((i) => i + 1), phases[idx].ms);
         advanceRef.current = t;
         return () => {
             if (advanceRef.current) window.clearTimeout(advanceRef.current);
         };
-    }, [idx, phases]);
+    }, [idx, phases, done]);
 
     // Auto-advance to next step after completion (1s fade)
     useEffect(() => {
