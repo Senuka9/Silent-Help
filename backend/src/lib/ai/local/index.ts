@@ -56,42 +56,10 @@ interface PipelineCache {
 
 const CACHE: PipelineCache = { loading: {}, failed: new Set() };
 
-async function getPipeline(kind: 'embed' | 'emotion' | 'zeroShot'): Promise<unknown> {
-    if (CACHE[kind]) return CACHE[kind];
-    if (CACHE.failed.has(kind)) return null;
-    if (CACHE.loading[kind]) return CACHE.loading[kind];
-
-    const modelFor: Record<typeof kind, { task: PipelineType; model: string }> = {
-        embed: { task: 'feature-extraction', model: 'Xenova/bge-small-en-v1.5' },
-        emotion: { task: 'text-classification', model: 'Xenova/roberta-base-go_emotions' },
-        zeroShot: { task: 'zero-shot-classification', model: 'Xenova/distilbert-base-uncased-mnli' },
-    };
-
-    const p = (async () => {
-        const { pipeline, env } = await import('@huggingface/transformers');
-        // Cache models under /tmp for serverless; in long-running dyno, default cache is fine.
-        if (process.env.TRANSFORMERS_CACHE) {
-            env.cacheDir = process.env.TRANSFORMERS_CACHE;
-        }
-        const spec = modelFor[kind];
-        logger.info({ kind, model: spec.model }, 'localAi.load_start');
-        const pipe = await pipeline(spec.task, spec.model, { dtype: 'q8' } as never);
-        logger.info({ kind, model: spec.model }, 'localAi.load_ok');
-        return pipe;
-    })();
-
-    CACHE.loading[kind] = p;
-    try {
-        const pipe = await p;
-        CACHE[kind] = pipe;
-        return pipe;
-    } catch (e) {
-        CACHE.failed.add(kind);
-        logger.warn({ kind, err: String(e) }, 'localAi.load_failed');
-        return null;
-    } finally {
-        delete CACHE.loading[kind];
-    }
+async function getPipeline(_kind: 'embed' | 'emotion' | 'zeroShot'): Promise<unknown> {
+    // @huggingface/transformers removed to fit Vercel 250 MB serverless limit.
+    // All AI tasks route through cloud providers (Gemini / OpenAI) instead.
+    return null;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
