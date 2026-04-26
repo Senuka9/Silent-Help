@@ -33,9 +33,9 @@ type PipelineType = 'feature-extraction' | 'text-classification' | 'zero-shot-cl
 export type AiMode = 'local' | 'cloud' | 'hybrid';
 
 export function aiMode(): AiMode {
-    const v = (process.env.AI_MODE || 'hybrid').toLowerCase();
+    const v = (process.env.AI_MODE || 'cloud').toLowerCase();
     if (v === 'local' || v === 'cloud' || v === 'hybrid') return v;
-    return 'hybrid';
+    return 'cloud';
 }
 
 export function localAiEnabled(): boolean {
