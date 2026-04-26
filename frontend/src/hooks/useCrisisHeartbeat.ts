@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 /**
  * Heartbeat hook — polls /api/health/crisis every 5 minutes to verify
@@ -23,44 +23,42 @@ export function useCrisisHeartbeat(): CrisisHeartbeat {
     const [status, setStatus] = useState<HeartbeatStatus>('checking');
     const [checkedAt, setCheckedAt] = useState<string | null>(null);
     const [countryStatuses, setCountryStatuses] = useState<Record<string, 'ok' | 'degraded' | 'fail'>>({});
-
-    const check = useCallback(async () => {
-        setStatus('checking');
-        try {
-            const res = await fetch('/api/health/crisis', { cache: 'no-store' });
-            if (!res.ok) {
-                setStatus('unknown');
-                return;
-            }
-            const data = await res.json();
-            setStatus(data.status === 'ok' ? 'ok' : 'degraded');
-            setCheckedAt(data.checkedAt);
-            const map: Record<string, 'ok' | 'degraded' | 'fail'> = {};
-            for (const c of data.countries ?? []) {
-                map[c.country] = c.status;
-            }
-            setCountryStatuses(map);
-        } catch {
-            if (typeof navigator !== 'undefined' && !navigator.onLine) {
-                setStatus('offline');
-            } else {
-                setStatus('unknown');
-            }
-        }
-    }, []);
+    const runRef = useRef<() => void>(() => {});
 
     useEffect(() => {
-        check();
-        const id = setInterval(check, POLL_INTERVAL_MS);
-        return () => clearInterval(id);
-    }, [check]);
+        let cancelled = false;
 
-    // Also check when coming back online
-    useEffect(() => {
-        const handler = () => check();
-        window.addEventListener('online', handler);
-        return () => window.removeEventListener('online', handler);
-    }, [check]);
+        const run = async () => {
+            setStatus('checking');
+            try {
+                const res = await fetch('/api/health/crisis', { cache: 'no-store' });
+                if (cancelled) return;
+                if (!res.ok) { setStatus('unknown'); return; }
+                const data = await res.json();
+                if (cancelled) return;
+                setStatus(data.status === 'ok' ? 'ok' : 'degraded');
+                setCheckedAt(data.checkedAt);
+                const map: Record<string, 'ok' | 'degraded' | 'fail'> = {};
+                for (const c of data.countries ?? []) map[c.country] = c.status;
+                setCountryStatuses(map);
+            } catch {
+                if (cancelled) return;
+                setStatus(typeof navigator !== 'undefined' && !navigator.onLine ? 'offline' : 'unknown');
+            }
+        };
 
-    return { status, checkedAt, countryStatuses, check };
+        runRef.current = run;
+        run();
+        const id = setInterval(run, POLL_INTERVAL_MS);
+        const onOnline = () => run();
+        window.addEventListener('online', onOnline);
+
+        return () => {
+            cancelled = true;
+            clearInterval(id);
+            window.removeEventListener('online', onOnline);
+        };
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    return { status, checkedAt, countryStatuses, check: () => runRef.current() };
 }

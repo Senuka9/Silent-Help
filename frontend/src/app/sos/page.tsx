@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, MessageCircle, Phone, ShieldCheck, Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowLeft, MessageCircle, Phone, ShieldCheck, RefreshCw } from 'lucide-react';
 import { useCrisisHeartbeat, type HeartbeatStatus } from '@/hooks/useCrisisHeartbeat';
 import BreathingExercise from '@/components/activities/BreathingExercise';
 import { Button } from '@/components/ui/button';
