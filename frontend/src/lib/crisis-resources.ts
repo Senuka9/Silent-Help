@@ -91,6 +91,15 @@ export const CRISIS_BY_COUNTRY: Record<string, CountryResources> = {
             { key: 'text-50808', title: 'Text 50808', description: 'Text HELLO to 50808 — 24/7 anonymous text support.', dest: '50808', smsBody: 'HELLO', mode: 'text', tone: 'calm' },
         ],
     },
+    LK: {
+        countryName: 'Sri Lanka',
+        emergency: '1926',
+        resources: [
+            { key: '1926', title: '1926', description: 'Mental health helpline — Sumithrayo, 24/7.', dest: '1926', mode: 'call', tone: 'danger' },
+            { key: 'sumithrayo', title: 'Sumithrayo', description: '+94 11 268 2535 — crisis counselling.', dest: '+94112682535', mode: 'call', tone: 'warning' },
+            { key: 'ccc', title: 'CCC Line 1333', description: '1333 — free counselling helpline.', dest: '1333', mode: 'call', tone: 'info' },
+        ],
+    },
     DE: {
         countryName: 'Germany',
         emergency: '112',

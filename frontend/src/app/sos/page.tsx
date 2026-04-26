@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { ArrowLeft, MessageCircle, Phone, ShieldCheck } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, MessageCircle, Phone, ShieldCheck, Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { useCrisisHeartbeat, type HeartbeatStatus } from '@/hooks/useCrisisHeartbeat';
 import BreathingExercise from '@/components/activities/BreathingExercise';
 import { Button } from '@/components/ui/button';
 import { Aurora, NoiseOverlay } from '@/components/ui/aurora';
@@ -22,14 +23,24 @@ const TONE: Record<ResourceTone, { border: string; bg: string; accent: string }>
   calm: { border: 'rgba(45,212,191,0.35)', bg: 'rgba(45,212,191,0.08)', accent: '#2dd4bf' },
 };
 
+const HEARTBEAT_COLORS: Record<HeartbeatStatus, { dot: string; label: string; bg: string }> = {
+  checking: { dot: '#fbbf24', label: 'Checking resources...', bg: 'rgba(251,191,36,0.08)' },
+  ok:       { dot: '#34d399', label: 'All resources verified', bg: 'rgba(52,211,153,0.08)' },
+  degraded: { dot: '#fbbf24', label: 'Some resources may be unavailable', bg: 'rgba(251,191,36,0.08)' },
+  offline:  { dot: '#6b7792', label: 'You are offline — numbers still work', bg: 'rgba(107,119,146,0.08)' },
+  unknown:  { dot: '#6b7792', label: 'Could not verify — numbers still work', bg: 'rgba(107,119,146,0.08)' },
+};
+
 export default function SOSPage() {
   const accent = '#fb7185';
   const [country, setCountryState] = useState<keyof typeof CRISIS_BY_COUNTRY>(() =>
     detectCountry(),
   );
+  const heartbeat = useCrisisHeartbeat();
 
   const resources = getCountryResources(country);
   const countryList = Object.keys(CRISIS_BY_COUNTRY) as Array<keyof typeof CRISIS_BY_COUNTRY>;
+  const hb = HEARTBEAT_COLORS[heartbeat.status];
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -138,6 +149,37 @@ export default function SOSPage() {
               );
             })}
           </div>
+        </motion.div>
+
+        {/* Heartbeat status */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="mx-auto mt-8 flex max-w-xl items-center justify-center gap-3 rounded-2xl border border-white/[0.06] px-5 py-3 backdrop-blur"
+          style={{ background: hb.bg }}
+        >
+          <span className="relative flex h-2 w-2 shrink-0">
+            {heartbeat.status === 'checking' ? (
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" style={{ background: hb.dot }} />
+            ) : null}
+            <span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: hb.dot }} />
+          </span>
+          <span className="text-xs text-[color:var(--color-fg-muted)]">{hb.label}</span>
+          {heartbeat.status !== 'checking' && (
+            <button
+              onClick={heartbeat.check}
+              className="ml-auto flex h-6 w-6 items-center justify-center rounded-md text-[color:var(--color-fg-subtle)] transition-colors hover:bg-white/[0.06] hover:text-[color:var(--color-fg-muted)]"
+              aria-label="Re-check crisis resource status"
+            >
+              <RefreshCw className="h-3 w-3" />
+            </button>
+          )}
+          {heartbeat.checkedAt && (
+            <span className="text-[10px] text-[color:var(--color-fg-subtle)]">
+              {new Date(heartbeat.checkedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          )}
         </motion.div>
 
         <div className="mt-10 text-center">
