@@ -1,20 +1,18 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['onnxruntime-node'],
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      // @huggingface/transformers is only used client-side (browser WebGPU/WASM).
-      // Exclude it + onnxruntime-node from server bundles to stay under Vercel 250 MB.
-      config.externals = config.externals || [];
-      config.externals.push({
-        '@huggingface/transformers': 'commonjs @huggingface/transformers',
-        'onnxruntime-node': 'commonjs onnxruntime-node',
-        sharp: 'commonjs sharp',
-      });
-    }
-    return config;
+  // On-device AI (@huggingface/transformers) runs only in the browser (WebGPU/WASM).
+  // Exclude it + its heavy native deps from Vercel serverless function traces
+  // so we stay well under the 250 MB uncompressed limit.
+  outputFileTracingExcludes: {
+    '*': [
+      './node_modules/onnxruntime-node/**',
+      './node_modules/@img/**',
+      './node_modules/sharp/**',
+      './node_modules/@huggingface/**',
+    ],
   },
+  serverExternalPackages: ['onnxruntime-node', 'sharp'],
   async rewrites() {
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
     return [

@@ -58,7 +58,7 @@ export function useCrisisHeartbeat(): CrisisHeartbeat {
             clearInterval(id);
             window.removeEventListener('online', onOnline);
         };
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []);
 
     return { status, checkedAt, countryStatuses, check: () => runRef.current() };
 }
