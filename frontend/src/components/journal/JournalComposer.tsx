@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
   Mic,
@@ -63,13 +63,15 @@ export function JournalComposer({
     useSpeechRecognition();
   const contentBeforeDictation = useRef('');
 
-  // Sync transcript into content
-  if (isListening && transcript) {
-    const prefix = contentBeforeDictation.current;
-    const needsSpace = prefix && !prefix.endsWith(' ') && !prefix.endsWith('\n');
-    const merged = (prefix + (needsSpace ? ' ' : '') + transcript).trimStart();
-    if (merged !== content) setContent(merged);
-  }
+  // Sync transcript into content — in an effect so we don't read refs during render
+  useEffect(() => {
+    if (isListening && transcript) {
+      const prefix = contentBeforeDictation.current;
+      const needsSpace = prefix && !prefix.endsWith(' ') && !prefix.endsWith('\n');
+      const merged = (prefix + (needsSpace ? ' ' : '') + transcript).trimStart();
+      if (merged !== content) setContent(merged);
+    }
+  }, [isListening, transcript, content, setContent]);
 
   const moodInfo = MOODS.find((m) => m.label === selectedMood);
   const accent = moodInfo?.color ?? '#7dd3fc';
