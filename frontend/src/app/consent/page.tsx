@@ -10,8 +10,6 @@ import { Logo } from '@/components/ui/logo';
 import { Button } from '@/components/ui/button';
 import { authHeaders } from '@/lib/api';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-
 type Retention = 'forever' | '1y' | '90d';
 
 const MIN_AGE = 13;
@@ -52,7 +50,7 @@ export default function ConsentGate() {
     (async () => {
       try {
         const headers = await authHeaders();
-        const res = await fetch(`${API_BASE}/api/consent`, { headers });
+        const res = await fetch(`/api/consent`, { headers });
         if (!res.ok) return;
         const data = await res.json();
         if (data?.current) router.replace('/onboarding');
@@ -85,7 +83,7 @@ export default function ConsentGate() {
         const locale = typeof navigator !== 'undefined' ? navigator.language : undefined;
         const region = locale?.split('-')[1]?.toUpperCase();
         const headers = await authHeaders();
-        const res = await fetch(`${API_BASE}/api/consent`, {
+        const res = await fetch(`/api/consent`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...headers },
           body: JSON.stringify({ birthYear, retention, locale, region }),

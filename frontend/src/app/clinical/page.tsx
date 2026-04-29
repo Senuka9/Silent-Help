@@ -318,8 +318,17 @@ export default function ClinicalPage() {
                                 </div>
 
                                 <div className="mt-6 space-y-5">
-                                    {instrument.items.map((q, idx) => (
-                                        <div key={idx} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
+                                    {instrument.items.map((q, idx) => {
+                                        const isItem9 = active === 'phq9' && idx === 8;
+                                        const item9Flagged = isItem9 && answers[idx] >= 1;
+                                        return (
+                                        <div key={idx}>
+                                        <div className={cn(
+                                            'rounded-2xl border p-4',
+                                            item9Flagged
+                                                ? 'border-rose-400/40 bg-rose-400/[0.06]'
+                                                : 'border-white/[0.06] bg-white/[0.02]',
+                                        )}>
                                             <div className="text-sm leading-relaxed">
                                                 <span className="mr-2 text-[color:var(--color-fg-subtle)]">{idx + 1}.</span>
                                                 {q}
@@ -350,7 +359,20 @@ export default function ClinicalPage() {
                                                 ))}
                                             </div>
                                         </div>
-                                    ))}
+                                        {item9Flagged && (
+                                            <div className="mt-2 flex items-center gap-3 rounded-xl border border-rose-400/30 bg-rose-400/[0.06] p-3 text-sm text-rose-100">
+                                                <Phone className="h-4 w-4 shrink-0 text-rose-300" />
+                                                <span>
+                                                    If you are having thoughts of harming yourself, please reach out now.{' '}
+                                                    <Link href="/sos" className="font-medium text-rose-300 underline underline-offset-4 hover:text-white">
+                                                        Open crisis support →
+                                                    </Link>
+                                                </span>
+                                            </div>
+                                        )}
+                                        </div>
+                                        );
+                                    })}
                                 </div>
 
                                 <div className="mt-6 flex flex-wrap items-center gap-3">

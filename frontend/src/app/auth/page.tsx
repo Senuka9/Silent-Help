@@ -78,8 +78,7 @@ function AuthForms() {
       // Consent gate: if the signed-in user has not given Art 9 consent yet,
       // route them through /consent first.
       try {
-        const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-        const res = await fetch(`${API_BASE}/api/consent`, {
+        const res = await fetch(`/api/consent`, {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
         if (res.ok) {
@@ -111,8 +110,7 @@ function AuthForms() {
     // wellness surface. Reuse the consent probe to decide where to go.
     if (guestToken && !hasPending) {
       try {
-        const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-        const res = await fetch(`${API_BASE}/api/consent`, {
+        const res = await fetch(`/api/consent`, {
           headers: { Authorization: `Bearer ${guestToken}` },
         });
         if (res.ok) {

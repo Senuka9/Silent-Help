@@ -9,8 +9,6 @@ import { Aurora, NoiseOverlay } from '@/components/ui/aurora';
 import { Button } from '@/components/ui/button';
 import { authHeaders, clearGuestAuth } from '@/lib/api';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-
 type Retention = 'forever' | '1y' | '90d';
 
 interface ConsentState {
@@ -39,7 +37,7 @@ export default function SettingsDataPage() {
 
   const load = useCallback(async () => {
     const headers = await authHeaders();
-    const res = await fetch(`${API_BASE}/api/consent`, { headers });
+    const res = await fetch(`/api/consent`, { headers });
     if (!res.ok) return;
     setState(await res.json());
   }, []);
@@ -54,7 +52,7 @@ export default function SettingsDataPage() {
       setMessage(null);
       try {
         const headers = await authHeaders();
-        const res = await fetch(`${API_BASE}/api/me/retention`, {
+        const res = await fetch(`/api/me/retention`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...headers },
           body: JSON.stringify({ retention: r }),
@@ -74,7 +72,7 @@ export default function SettingsDataPage() {
 
   const exportData = useCallback(async () => {
     const headers = await authHeaders();
-    const res = await fetch(`${API_BASE}/api/me/export`, { headers });
+    const res = await fetch(`/api/me/export`, { headers });
     if (!res.ok) {
       setMessage('Could not export your data.');
       return;
@@ -94,7 +92,7 @@ export default function SettingsDataPage() {
     setSaving(true);
     try {
       const headers = await authHeaders();
-      await fetch(`${API_BASE}/api/me`, { method: 'DELETE', headers });
+      await fetch(`/api/me`, { method: 'DELETE', headers });
       // Hard-clear local storage, guest token, and bounce to landing.
       localStorage.clear();
       clearGuestAuth();
@@ -106,7 +104,7 @@ export default function SettingsDataPage() {
 
   const withdrawConsent = useCallback(async () => {
     const headers = await authHeaders();
-    const res = await fetch(`${API_BASE}/api/consent`, { method: 'DELETE', headers });
+    const res = await fetch(`/api/consent`, { method: 'DELETE', headers });
     if (res.ok) {
       setMessage('Consent withdrawn. Please delete your account to erase stored data.');
       await load();

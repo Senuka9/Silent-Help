@@ -3,7 +3,7 @@
  * All backend communication goes through this module.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const API_BASE = '';
 
 const GUEST_TOKEN_KEY = 'sh_guest_token';
 const GUEST_NAME_KEY = 'sh_guest_name';
@@ -633,7 +633,7 @@ export async function deleteAccount() {
 }
 
 export function exportAccountUrl() {
-    return `${API_BASE}/api/me/export`;
+    return `/api/me/export`;
 }
 
 // ─── Types ──────────────────────────────────────────────────
