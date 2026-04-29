@@ -120,12 +120,19 @@ export default function LettersPage() {
                     <CardContent className="relative p-6 sm:p-8">
                         <textarea
                             value={content}
-                            onChange={(e) => setContent(e.target.value)}
+                            onChange={(e) => {
+                                if (e.target.value.length <= 5000) setContent(e.target.value);
+                            }}
                             placeholder="Dear me, when you read this…"
                             rows={8}
                             className="w-full resize-y rounded-2xl border border-white/[0.08] bg-[color:var(--color-bg)] px-5 py-4 text-base leading-relaxed outline-none transition-colors placeholder:text-[color:var(--color-fg-subtle)] focus:border-white/20"
                         />
-                        <div className="mt-5 flex flex-wrap items-center gap-3">
+                        <div className="mt-2 flex justify-end text-xs text-[color:var(--color-fg-subtle)]">
+                            <span className={content.length > 4800 ? 'text-amber-400' : ''}>
+                                {content.length.toLocaleString()}/5,000
+                            </span>
+                        </div>
+                        <div className="mt-3 flex flex-wrap items-center gap-3">
                             <div className="text-xs uppercase tracking-[0.2em] text-[color:var(--color-fg-subtle)]">
                                 Deliver in
                             </div>

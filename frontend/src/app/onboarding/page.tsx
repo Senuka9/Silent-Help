@@ -118,6 +118,32 @@ export default function OnboardingFlow() {
 
   const [safetyOverlay, setSafetyOverlay] = useState<SafetyState | null>(null);
 
+  // Restore saved progress on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('sh_onboarding_progress');
+      if (saved) {
+        const p = JSON.parse(saved);
+        if (p.stepNumber && p.routeGroup && p.routeHistory && p.answerDetails) {
+          setStepNumber(p.stepNumber);
+          setRouteGroup(p.routeGroup);
+          setRouteHistory(p.routeHistory);
+          setAnswerDetails(p.answerDetails);
+        }
+      }
+    } catch { /* ignore corrupt data */ }
+  }, []);
+
+  // Persist progress after each step change
+  useEffect(() => {
+    if (stepNumber === 1 && answerDetails.length === 0) return;
+    try {
+      localStorage.setItem('sh_onboarding_progress', JSON.stringify({
+        stepNumber, routeGroup, routeHistory, answerDetails,
+      }));
+    } catch { /* storage full — ignore */ }
+  }, [stepNumber, routeGroup, routeHistory, answerDetails]);
+
   useEffect(() => {
     fetch('/api/assessment/questions')
       .then((res) => res.json())
@@ -182,6 +208,7 @@ export default function OnboardingFlow() {
         const payload = { answerDetails: updatedDetails };
         if (typeof window !== 'undefined') {
             localStorage.setItem('sh_pending_assessment', JSON.stringify(payload));
+            localStorage.removeItem('sh_onboarding_progress');
         }
         setTimeout(() => router.push('/auth'), 2400);
       } catch { setSubmitting(false); }
