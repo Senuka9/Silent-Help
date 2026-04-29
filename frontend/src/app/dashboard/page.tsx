@@ -116,49 +116,40 @@ export default function DashboardPage() {
   const stress = resolveStressLevel(profile?.stressLevel);
   const firstName = user?.firstName || user?.username || 'friend';
   const emotionKey = (profile?.emotionalProfile ?? '').toLowerCase();
-  const isOverwhelmed = emotionKey === 'overwhelmed';
-  const isAnxious = emotionKey === 'anxious';
-  const isFrustrated = emotionKey === 'frustrated';
-  const isSad = emotionKey === 'sad';
-  const isPressure = emotionKey === 'pressure';
-  const hasRecoveryPath = isOverwhelmed || isAnxious || isFrustrated || isSad || isPressure;
-  const heroTitle = isOverwhelmed
-    ? 'Your Overwhelmed recovery path'
-    : isAnxious
-      ? 'Your Anxious recovery path'
-      : isFrustrated
-        ? 'Your Frustrated recovery path'
-        : isSad
-          ? 'Your Sad recovery path'
-          : isPressure
-            ? 'Your Pressure recovery path'
-            : profile?.primaryTool?.name ?? 'Box Breathing';
-  const heroDescription = isOverwhelmed
-    ? 'A six-step ritual to settle your body, empty your head, and take one small action. Tuned to your current stress level — you can pause any time.'
-    : isAnxious
-      ? 'Four steps to interrupt the alarm, untwist the thought, schedule the worry, and take one tiny brave step. Tuned to your stress level.'
-      : isFrustrated
-        ? 'Four active steps — trap the heat, untwist the narrative, contain the trigger, and lock in an If-Then plan. Physical release built in.'
-        : isSad
-          ? 'Six gentle steps — notice the body, soften the story, savor one tiny good thing, take one micro-action, be your own friend, and point at what still matters. Nothing here is timed.'
-          : isPressure
-            ? 'Name the pressure, reset the body, flip the story, rename the fuel, sort the load, hear your teammate voice, and save a playbook for next time. Pressure is fuel — we direct it.'
-            : profile?.primaryTool?.description ??
-              'A short, deterministic calm ritual designed for your current state.';
-  const heroCtaLabel = hasRecoveryPath
-    ? 'Start recovery path'
-    : `Start session · ${profile?.primaryTool?.duration ?? 3} min`;
-  const heroCtaHref = isOverwhelmed
-    ? '/recovery/overwhelmed'
-    : isAnxious
-      ? '/recovery/anxious'
-      : isFrustrated
-        ? '/recovery/frustrated'
-        : isSad
-          ? '/recovery/sad'
-          : isPressure
-            ? '/recovery/pressure'
-            : '/tools';
+
+  const RECOVERY_PATHS: Record<string, { title: string; description: string; href: string }> = {
+    overwhelmed: {
+      title: 'Your Overwhelmed recovery path',
+      description: 'A six-step ritual to settle your body, empty your head, and take one small action. Tuned to your current stress level — you can pause any time.',
+      href: '/recovery/overwhelmed',
+    },
+    anxious: {
+      title: 'Your Anxious recovery path',
+      description: 'Four steps to interrupt the alarm, untwist the thought, schedule the worry, and take one tiny brave step. Tuned to your stress level.',
+      href: '/recovery/anxious',
+    },
+    frustrated: {
+      title: 'Your Frustrated recovery path',
+      description: 'Four active steps — trap the heat, untwist the narrative, contain the trigger, and lock in an If-Then plan. Physical release built in.',
+      href: '/recovery/frustrated',
+    },
+    sad: {
+      title: 'Your Sad recovery path',
+      description: 'Six gentle steps — notice the body, soften the story, savor one tiny good thing, take one micro-action, be your own friend, and point at what still matters. Nothing here is timed.',
+      href: '/recovery/sad',
+    },
+    pressure: {
+      title: 'Your Pressure recovery path',
+      description: 'Name the pressure, reset the body, flip the story, rename the fuel, sort the load, hear your teammate voice, and save a playbook for next time. Pressure is fuel — we direct it.',
+      href: '/recovery/pressure',
+    },
+  };
+
+  const recovery = RECOVERY_PATHS[emotionKey];
+  const heroTitle = recovery?.title ?? profile?.primaryTool?.name ?? 'Box Breathing';
+  const heroDescription = recovery?.description ?? profile?.primaryTool?.description ?? 'A short, deterministic calm ritual designed for your current state.';
+  const heroCtaLabel = recovery ? 'Start recovery path' : `Start session · ${profile?.primaryTool?.duration ?? 3} min`;
+  const heroCtaHref = recovery?.href ?? '/tools';
 
   const moodSeries = useMemo(() => buildMoodSeries(moodLogs), [moodLogs]);
   const streak = useMemo(() => computeStreak(entries, moodLogs), [entries, moodLogs]);
@@ -229,7 +220,7 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* Bento grid */}
-      <div className="mt-8 grid gap-5 lg:grid-cols-6 lg:grid-rows-[auto_auto_auto]">
+      <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-6 lg:grid-rows-[auto_auto_auto]">
         {/* Primary tool spotlight */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}

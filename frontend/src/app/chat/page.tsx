@@ -155,8 +155,8 @@ export default function ChatIndexPage() {
                       e.stopPropagation();
                       remove(c.id);
                     }}
-                    className="opacity-0 transition-opacity group-hover:opacity-100"
-                    aria-label="Delete"
+                    className="opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30 rounded-md p-0.5"
+                    aria-label="Delete conversation"
                   >
                     <Trash2 className="h-4 w-4 text-[color:var(--color-fg-subtle)] hover:text-[color:var(--color-danger)]" />
                   </button>

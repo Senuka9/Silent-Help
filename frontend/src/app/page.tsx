@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { motion } from 'framer-motion';
@@ -58,15 +58,12 @@ const CRISIS_FEATURES = [
 export default function Home() {
   const router = useRouter();
   const { isSignedIn, isLoaded } = useUser();
-  const [mounted, setMounted] = useState(false);
+  const mounted = isLoaded && !isSignedIn;
 
   useEffect(() => {
     if (isLoaded && isSignedIn) {
       router.replace('/dashboard');
-      return;
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
   }, [isSignedIn, isLoaded, router]);
 
   if (!isLoaded) {

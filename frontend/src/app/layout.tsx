@@ -18,6 +18,20 @@ export const metadata: Metadata = {
   title: 'Silent Help · The quiet place between you and the storm',
   description:
     'A private, pathway-aware mental-health companion. Encrypted journalling, AI support, offline-first calm tools and a UK crisis safety net.',
+  openGraph: {
+    title: 'Silent Help',
+    description:
+      'A private mental-health companion. Pathway-aware support, encrypted journalling, and a crisis safety net — calm in under a minute.',
+    siteName: 'Silent Help',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Silent Help',
+    description:
+      'A private mental-health companion. Pathway-aware support, encrypted journalling, and a crisis safety net.',
+  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://silent-help.vercel.app'),
 };
 
 export const viewport: Viewport = {
