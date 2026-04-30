@@ -105,10 +105,10 @@ export default function SOSPage() {
                   setCountry(next);
                   setCountryState(next);
                 }}
-                className="rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1 text-xs text-[color:var(--color-fg)] focus:outline-none focus:ring-1 focus:ring-white/30"
+                className="rounded-lg border border-white/10 bg-[#0f172a] px-2.5 py-1 text-xs text-white focus:outline-none focus:ring-1 focus:ring-white/30"
               >
                 {countryList.map((c) => (
-                  <option key={c} value={c}>
+                  <option key={c} value={c} style={{ backgroundColor: '#0f172a', color: '#f1f5f9' }}>
                     {CRISIS_BY_COUNTRY[c].countryName}
                   </option>
                 ))}
