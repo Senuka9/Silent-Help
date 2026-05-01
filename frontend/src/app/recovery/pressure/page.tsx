@@ -45,6 +45,7 @@ import { StepPrevention } from '@/components/recovery/pressure/StepPrevention';
 import { StepDone } from '@/components/recovery/pressure/StepDone';
 import { createJournalEntry } from '@/lib/api';
 import { toast } from 'sonner';
+import { recordActivity } from '@/lib/streak';
 
 const STEP_ORDER: PressureStep[] = [
     'intro',
@@ -108,6 +109,7 @@ export default function PressureRecoveryPage() {
             if (next === 'done') {
                 const n = incrementCompletions();
                 setCompletions(n);
+                recordActivity();
                 window.setTimeout(clearSession, 1000);
             }
             return { ...s, currentStep: next };
@@ -518,6 +520,7 @@ export default function PressureRecoveryPage() {
                                         };
                                         const n = incrementCompletions();
                                         setCompletions(n);
+                                        recordActivity();
                                         return next;
                                     });
                                     window.setTimeout(clearSession, 1000);

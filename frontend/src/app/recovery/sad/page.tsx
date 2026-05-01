@@ -43,6 +43,7 @@ import { StepValues } from '@/components/recovery/sad/StepValues';
 import { StepDone } from '@/components/recovery/sad/StepDone';
 import { createJournalEntry } from '@/lib/api';
 import { toast } from 'sonner';
+import { recordActivity } from '@/lib/streak';
 
 const STEP_ORDER: SadStep[] = [
     'body',
@@ -127,6 +128,7 @@ export default function SadRecoveryPage() {
             if (next === 'done') {
                 const n = incrementCompletions();
                 setCompletions(n);
+                recordActivity();
                 window.setTimeout(clearSession, 1000);
             }
             return { ...s, currentStep: next };
@@ -465,6 +467,7 @@ export default function SadRecoveryPage() {
                                         };
                                         const n = incrementCompletions();
                                         setCompletions(n);
+                                        recordActivity();
                                         return next;
                                     });
                                     window.setTimeout(clearSession, 1000);

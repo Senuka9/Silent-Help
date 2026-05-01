@@ -36,6 +36,7 @@ import {
   type WeeklyDigest,
 } from '@/lib/api';
 import { toast } from 'sonner';
+import { recordActivity, getStreak } from '@/lib/streak';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -152,13 +153,15 @@ export default function DashboardPage() {
   const heroCtaHref = recovery?.href ?? '/tools';
 
   const moodSeries = useMemo(() => buildMoodSeries(moodLogs), [moodLogs]);
-  const streak = useMemo(() => computeStreak(entries, moodLogs), [entries, moodLogs]);
+  const streakData = getStreak();
+  const streak = { current: streakData.currentStreak, longest: streakData.longestStreak };
 
   const handleLogMood = async (key: string, intensity: number) => {
     setSubmittingMood(true);
     try {
       const res = await logMood(key, intensity);
       setMoodLogs((prev) => [res.moodLog, ...prev]);
+      recordActivity();
       toast.success('Mood logged', { description: 'Thanks for checking in.' });
     } catch (e) {
       toast.error('Could not save mood', { description: (e as Error).message });
@@ -690,32 +693,4 @@ function buildMoodSeries(logs: MoodLog[]) {
     });
   }
   return days as { label: string; value: number; date: string }[];
-}
-
-function computeStreak(entries: JournalEntry[], logs: MoodLog[]) {
-  const dates = new Set<string>();
-  entries.forEach((e) => dates.add(e.createdAt.slice(0, 10)));
-  logs.forEach((l) => dates.add(l.createdAt.slice(0, 10)));
-
-  let current = 0;
-  const now = new Date();
-  while (true) {
-    const key = new Date(now.getTime() - current * 86400000).toISOString().slice(0, 10);
-    if (dates.has(key)) current++;
-    else break;
-    if (current > 365) break;
-  }
-
-  const sorted = [...dates].sort();
-  let longest = 0;
-  let run = 0;
-  let prev: Date | null = null;
-  for (const d of sorted) {
-    const cur = new Date(d);
-    if (prev && (cur.getTime() - prev.getTime()) / 86400000 === 1) run++;
-    else run = 1;
-    longest = Math.max(longest, run);
-    prev = cur;
-  }
-  return { current, longest };
 }

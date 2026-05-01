@@ -10,6 +10,7 @@ import {
     type FutureLetter,
 } from '@/lib/api';
 import { Card, CardContent } from '@/components/ui/card';
+import { recordActivity } from '@/lib/streak';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -66,6 +67,7 @@ export default function LettersPage() {
             const res = await createFutureLetter(content.trim(), days);
             setLetters((prev) => [res.letter, ...prev].sort((a, b) => a.deliverAt.localeCompare(b.deliverAt)));
             setContent('');
+            recordActivity();
             toast.success('Sealed', {
                 description: `Your letter waits for you on ${formatDeliveryDate(res.letter.deliverAt)}.`,
             });

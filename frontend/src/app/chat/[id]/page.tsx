@@ -43,6 +43,7 @@ import { Badge } from '@/components/ui/badge';
 import { useWellness } from '@/components/wellness/WellnessProvider';
 import { resolveEmotion } from '@/lib/emotion-theme';
 import { cn } from '@/lib/cn';
+import { recordActivity } from '@/lib/streak';
 
 interface AssistantMeta {
   persona?: ChatPersona;
@@ -192,6 +193,7 @@ export default function ConversationPage({ params }: { params: Promise<{ id: str
         createdAt: new Date().toISOString(),
       };
       setMessages((prev) => [...prev, userMsg]);
+      recordActivity();
       if (textareaRef.current) textareaRef.current.style.height = 'auto';
 
       streamingContentRef.current = '';

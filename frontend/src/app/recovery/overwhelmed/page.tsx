@@ -30,6 +30,7 @@ import StepShrinkField from '@/components/recovery/overwhelmed/StepShrinkField';
 import StepSprint from '@/components/recovery/overwhelmed/StepSprint';
 import StepDone from '@/components/recovery/overwhelmed/StepDone';
 import StepReduceFuture from '@/components/recovery/overwhelmed/StepReduceFuture';
+import { recordActivity } from '@/lib/streak';
 
 const STEP_LABELS = [
     'Settle your body',
@@ -164,6 +165,7 @@ export default function OverwhelmedRecoveryPage() {
 
             // Mark a completion — eligible for step 6 if 2+ completions.
             const totalCompletions = completePath();
+            recordActivity();
             if (totalCompletions >= 2) {
                 update({ currentStep: 5 });
             } else {

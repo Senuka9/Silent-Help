@@ -10,6 +10,7 @@ import {
     type ClinicalInstrument,
     type ClinicalResult,
 } from '@/lib/api';
+import { recordActivity } from '@/lib/streak';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -143,6 +144,7 @@ export default function ClinicalPage() {
         try {
             const res = await submitClinical(active, answers);
             setHistory((prev) => [res.result, ...prev]);
+            recordActivity();
             toast.success('Recorded', {
                 description: `${INSTRUMENTS[active].title}: ${res.result.score} · ${severityLabel(res.result.severity)}`,
             });

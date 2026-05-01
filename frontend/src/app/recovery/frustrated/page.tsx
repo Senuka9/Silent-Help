@@ -27,6 +27,7 @@ import {
     type FrustratedSession,
     type FrustratedStep,
 } from '@/lib/recovery-frustrated';
+import { recordActivity } from '@/lib/streak';
 import { StepHeat } from '@/components/recovery/frustrated/StepHeat';
 import { StepUntwist } from '@/components/recovery/frustrated/StepUntwist';
 import { StepContain } from '@/components/recovery/frustrated/StepContain';
@@ -84,6 +85,7 @@ export default function FrustratedRecoveryPage() {
             if (next === 'done') {
                 const n = incrementCompletions();
                 setCompletions(n);
+                recordActivity();
                 window.setTimeout(clearSession, 1000);
             }
             return { ...s, currentStep: next };
@@ -340,6 +342,7 @@ export default function FrustratedRecoveryPage() {
                                         };
                                         const n = incrementCompletions();
                                         setCompletions(n);
+                                        recordActivity();
                                         return next;
                                     });
                                     window.setTimeout(clearSession, 1000);

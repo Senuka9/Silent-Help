@@ -29,6 +29,7 @@ import {
     type AnxiousSession,
     type AnxiousStep,
 } from '@/lib/recovery-anxious';
+import { recordActivity } from '@/lib/streak';
 import { StepGround } from '@/components/recovery/anxious/StepGround';
 import { StepReframe } from '@/components/recovery/anxious/StepReframe';
 import { StepWorryWindow } from '@/components/recovery/anxious/StepWorryWindow';
@@ -91,6 +92,7 @@ export default function AnxiousRecoveryPage() {
             if (next === 'done') {
                 const n = incrementCompletions();
                 setCompletions(n);
+                recordActivity();
                 window.setTimeout(clearSession, 1000);
             }
             return { ...s, currentStep: next };
@@ -354,6 +356,7 @@ export default function AnxiousRecoveryPage() {
                                         };
                                         const n = incrementCompletions();
                                         setCompletions(n);
+                                        recordActivity();
                                         return next;
                                     });
                                     // Clear the in-progress cache once the run is complete.
