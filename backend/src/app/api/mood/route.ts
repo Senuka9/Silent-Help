@@ -47,16 +47,30 @@ export async function POST(req: NextRequest) {
     }
 }
 
-/** GET /api/mood — last 30 mood entries */
+/** GET /api/mood — recent mood entries (default last 30 rows, or all logs in the last `days` calendar days). */
 export async function GET(req: NextRequest) {
     const payload = getUserFromRequest(req);
     if (!payload) return unauthorizedResponse();
     const log = requestLogger(req);
     try {
+        const daysParam = new URL(req.url).searchParams.get('days');
+        const days =
+            daysParam != null && daysParam !== ''
+                ? Math.min(120, Math.max(1, Number.parseInt(daysParam, 10) || 14))
+                : null;
+
+        const where =
+            days != null
+                ? {
+                      userId: payload.userId,
+                      createdAt: { gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000) },
+                  }
+                : { userId: payload.userId };
+
         const logs = await prisma.moodLog.findMany({
-            where: { userId: payload.userId },
+            where,
             orderBy: { createdAt: 'desc' },
-            take: 30,
+            take: days != null ? 2000 : 30,
         });
         return jsonOk({ logs });
     } catch (e) {

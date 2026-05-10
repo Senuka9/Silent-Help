@@ -81,7 +81,7 @@ export default function SOSPage() {
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mx-auto mt-10 max-w-xl overflow-hidden rounded-[var(--radius-xl)] border border-white/[0.06] bg-white/[0.02] p-2 backdrop-blur"
+          className="mx-auto mt-10 max-w-xl overflow-visible rounded-[var(--radius-xl)] border border-white/[0.06] bg-white/[0.02] p-2 pb-6 backdrop-blur"
         >
           <BreathingExercise variant="calm-60" accent={accent} onComplete={() => {}} onCancel={() => {}} />
         </motion.div>

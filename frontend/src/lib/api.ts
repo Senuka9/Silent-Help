@@ -470,8 +470,10 @@ export async function submitClinical(instrument: ClinicalInstrument, answers: nu
 
 // ─── Mood ───────────────────────────────────────────────────
 
-export async function getMoodHistory() {
-    return apiFetch<{ logs: MoodLog[] }>('/api/mood');
+export async function getMoodHistory(opts?: { days?: number }) {
+    const q =
+        opts?.days != null && opts.days > 0 ? `?days=${Math.min(120, Math.max(1, Math.round(opts.days)))}` : '';
+    return apiFetch<{ logs: MoodLog[] }>(`/api/mood${q}`);
 }
 
 export async function logMood(mood: string, intensity: number, note?: string) {

@@ -220,24 +220,31 @@ export default function OnboardingFlow() {
     setRouteHistory((prev) => [...prev, nextRoute]);
   };
 
-  const getEmojiForOption = (text: string, route: string, step: number) => {
-    const t = text.toLowerCase();
-    if (step === 1) {
-      if (route === 'overwhelmed') return '😵‍💫';
-      if (route === 'anxious') return '😰';
-      if (route === 'frustrated') return '😤';
-      if (route === 'sad') return '😔';
-      if (route === 'pressure') return '🏋️';
-    }
-    if (t.includes('panic') || t.includes('explode') || t.includes('burn out')) return '🚨';
-    if (t.includes('heartbeat') || t.includes('sweating') || t.includes('argue')) return '❤️‍🔥';
-    if (t.includes('constant') || t.includes('pile') || t.includes('ongoing')) return '⏳';
-    if (t.includes('low') || t.includes('withdrawn') || t.includes('delay') || t.includes('ignore')) return '🐢';
-    if (t.includes('slight') || t.includes('small') || t.includes('okay')) return '🌱';
-    if (t.includes('strong') || t.includes('very') || t.includes('high')) return '⚡';
-    if (t.includes('procrastinating') || t.includes('avoiding')) return '🫣';
-    if (t.includes('too much') || t.includes('struggling') || t.includes('overthinking')) return '🌪️';
-    return '✨';
+  /** Step 1 = stress “fit”; steps 2–3 use seeded score tiers (1–4) per emotion branch so emoji matches each choice. */
+  const getEmojiForOption = (step: number, routeGroup: string, nextRoute: string, scoreVal: number) => {
+    const nr = (nextRoute || '').toLowerCase();
+
+    const step1: Record<string, string> = {
+      overwhelmed: '🌊',
+      anxious: '😰',
+      frustrated: '😤',
+      sad: '😔',
+      pressure: '🎯',
+    };
+    if (step === 1) return step1[nr] ?? '✨';
+
+    const emotion = EMOTION_ROUTES.has(routeGroup.toLowerCase()) ? routeGroup.toLowerCase() : null;
+    const tiers: Record<string, [string, string, string, string]> = {
+      overwhelmed: ['🌱', '📋', '🌊', '🛑'],
+      anxious: ['🙂', '😟', '😰', '🆘'],
+      frustrated: ['😮‍💨', '😠', '😤', '💢'],
+      sad: ['🌥️', '😔', '😢', '💔'],
+      pressure: ['📌', '📊', '⚡', '🎯'],
+    };
+    if (!emotion || !tiers[emotion]) return '✨';
+
+    const tier = Math.min(3, Math.max(0, (Number.isFinite(scoreVal) ? scoreVal : 2) - 1));
+    return tiers[emotion][tier];
   };
 
   /* --- Active emotion theme (based on chosen route) --- */
@@ -316,14 +323,15 @@ export default function OnboardingFlow() {
 
   /* --- Build options dynamically (3, 4, or 5 options) --- */
   const allLabels: OptionLabel[] = ['A', 'B', 'C', 'D', 'E'];
-  const options: { text: string; route: string; flag: string; label: OptionLabel }[] = [];
+  const options: { text: string; route: string; flag: string; label: OptionLabel; scoreVal: number }[] = [];
   if (currentQ) {
     for (const label of allLabels) {
       const text = currentQ[`answer${label}Text` as keyof AssessmentQuestion] as string | undefined;
       const route = currentQ[`nextRoute${label}` as keyof AssessmentQuestion] as string | undefined;
       const flag = (currentQ[`safetyFlag${label}` as keyof AssessmentQuestion] as string | undefined) || 'none';
+      const scoreVal = Number(currentQ[`scoreVal${label}` as keyof AssessmentQuestion] ?? 0);
       if (text && route) {
-        options.push({ text, route, flag, label });
+        options.push({ text, route, flag, label, scoreVal });
       }
     }
   }
@@ -463,7 +471,7 @@ export default function OnboardingFlow() {
 
               <div className="mt-10 flex flex-col gap-3">
                 {options.map((opt, i) => {
-                  const emoji = getEmojiForOption(opt.text, opt.route, stepNumber);
+                  const emoji = getEmojiForOption(stepNumber, routeGroup, opt.route, opt.scoreVal);
                   const optionEmotion = stepNumber === 1
                     ? resolveEmotion(resolveRouteEmotion(opt.route))
                     : activeEmotion;

@@ -32,7 +32,6 @@ import {
   suggestCoachAction,
   type CoachSuggestion,
   type MoodLog,
-  type JournalEntry,
   type WeeklyDigest,
 } from '@/lib/api';
 import { toast } from 'sonner';
@@ -72,7 +71,7 @@ export default function DashboardPage() {
   const { user } = useUser();
   const { profile, isLoading, loadProfile } = useWellness();
   const [moodLogs, setMoodLogs] = useState<MoodLog[]>([]);
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [journalCount, setJournalCount] = useState(0);
   const [submittingMood, setSubmittingMood] = useState(false);
   const [digest, setDigest] = useState<WeeklyDigest | null>(null);
   const [digestLoading, setDigestLoading] = useState(true);
@@ -90,11 +89,11 @@ export default function DashboardPage() {
       }
     });
     Promise.all([
-      getMoodHistory().catch(() => ({ logs: [] as MoodLog[] })),
-      listJournalEntries().catch(() => ({ entries: [] as JournalEntry[] })),
+      getMoodHistory({ days: 21 }).catch(() => ({ logs: [] as MoodLog[] })),
+      listJournalEntries().catch(() => ({ entries: [] as { id: string }[] })),
     ]).then(([m, j]) => {
       setMoodLogs(m.logs ?? []);
-      setEntries(j.entries ?? []);
+      setJournalCount(Array.isArray(j.entries) ? j.entries.length : 0);
     });
     // Defer AI-backed calls so they don't block initial render or navigation.
     const aiTimer = window.setTimeout(() => {
@@ -391,7 +390,7 @@ export default function DashboardPage() {
                       stroke="transparent"
                       interval="preserveStartEnd"
                     />
-                    <YAxis hide domain={[0, 5]} />
+                    <YAxis hide domain={[1, 10]} />
                     <RechartsTooltip
                       cursor={{ stroke: 'rgba(255,255,255,0.08)' }}
                       contentStyle={{
@@ -400,6 +399,11 @@ export default function DashboardPage() {
                         borderRadius: 12,
                         fontSize: 12,
                       }}
+                      formatter={(value: number | undefined, _name: string, item: { payload?: { hasData?: boolean } }) =>
+                        item?.payload?.hasData === false || value == null
+                          ? ['No check-in', 'Mood']
+                          : [Number(value).toFixed(1), 'Avg intensity']
+                      }
                     />
                     <Area
                       type="monotone"
@@ -407,6 +411,7 @@ export default function DashboardPage() {
                       stroke={theme.accent}
                       strokeWidth={2}
                       fill="url(#moodGradient)"
+                      connectNulls={false}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -520,7 +525,9 @@ export default function DashboardPage() {
                 <>
                   <p className="text-[15px] leading-relaxed text-[color:var(--color-fg)]">
                     {digest?.summary ??
-                      'Write a few entries this week and I will reflect them back to you gently.'}
+                      (journalCount === 0
+                        ? 'Write a few entries this week and I will reflect them back to you gently.'
+                        : 'Your weekly reflection will appear here once it is ready.')}
                   </p>
                   {digest?.themes && digest.themes.length > 0 && (
                     <div className="flex flex-wrap gap-2">
@@ -674,23 +681,30 @@ function QuickAction({
 
 /* ---------- helpers ---------- */
 
+function localCalendarKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 function buildMoodSeries(logs: MoodLog[]) {
   const now = new Date();
-  const days: { label: string; value: number | null; date: string }[] = [];
+  const days: { label: string; value: number | null; date: string; hasData: boolean }[] = [];
   for (let i = 13; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const key = d.toISOString().slice(0, 10);
-    const dayLogs = logs.filter((l) => l.createdAt.slice(0, 10) === key);
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    const key = localCalendarKey(d);
+    const dayLogs = logs.filter((l) => localCalendarKey(new Date(l.createdAt)) === key);
     const avg =
       dayLogs.length > 0
         ? dayLogs.reduce((a, b) => a + b.intensity, 0) / dayLogs.length
         : null;
     days.push({
       label: d.toLocaleDateString(undefined, { weekday: 'short' }).slice(0, 2),
-      value: avg ?? 2.5,
+      value: avg,
       date: key,
+      hasData: dayLogs.length > 0,
     });
   }
-  return days as { label: string; value: number; date: string }[];
+  return days;
 }

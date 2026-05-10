@@ -26,12 +26,12 @@ export async function GET(req: NextRequest) {
         for (const r of tools) if (r.action === 'completed') days.add(toDayKey(r.createdAt));
         for (const r of journals) days.add(toDayKey(r.createdAt));
 
-        // Current streak: consecutive days ending at today (or yesterday).
+        // Current streak: consecutive UTC calendar days ending at today (or yesterday).
+        // Uses ISO dates so behavior matches stored Timestamptz regardless of server TZ.
         let streak = 0;
-        const today = new Date();
+        const anchor = new Date();
         for (let i = 0; i < 60; i++) {
-            const d = new Date(today);
-            d.setDate(today.getDate() - i);
+            const d = new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth(), anchor.getUTCDate() - i));
             if (days.has(toDayKey(d))) streak++;
             else if (i === 0) continue; // grace for "not yet today"
             else break;
@@ -63,6 +63,5 @@ export async function GET(req: NextRequest) {
 }
 
 function toDayKey(d: Date | string): string {
-    const date = new Date(d);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    return new Date(d).toISOString().slice(0, 10);
 }
