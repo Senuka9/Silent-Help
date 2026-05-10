@@ -112,6 +112,32 @@ function phaseFromElapsed(elapsedSec: number, pattern: BreathPattern): { cycle: 
     return null;
 }
 
+/** Smooth ease for inhale/exhale so the orb matches how a breath feels (not robotic linear). */
+function easeInOutSine(t: number): number {
+    if (t <= 0) return 0;
+    if (t >= 1) return 1;
+    return 0.5 - 0.5 * Math.cos(Math.PI * t);
+}
+
+const ORB_MIN = 0.52;
+const ORB_MAX = 1;
+
+function breathOrbScale(phase: BreathPhase | undefined, linearProgress: number): number {
+    const u = easeInOutSine(Math.min(1, Math.max(0, linearProgress)));
+    switch (phase) {
+        case 'inhale':
+            return ORB_MIN + (ORB_MAX - ORB_MIN) * u;
+        case 'hold-in':
+            return ORB_MAX;
+        case 'exhale':
+            return ORB_MAX - (ORB_MAX - ORB_MIN) * u;
+        case 'hold-out':
+            return ORB_MIN;
+        default:
+            return ORB_MIN;
+    }
+}
+
 export default function BreathingExercise({ variant, accent, onComplete, onCancel }: BreathingExerciseProps) {
     const pattern = PATTERNS[variant] || PATTERNS['calm-60'];
 
@@ -140,11 +166,11 @@ export default function BreathingExercise({ variant, accent, onComplete, onCance
         startMsRef.current = performance.now();
         prevPhaseIdxRef.current = -1;
 
-        const tickMs = 1000 / 30;
+        let raf = 0;
 
         const pump = () => {
             const elapsedSec = (performance.now() - startMsRef.current) / 1000;
-            if (elapsedSec + 0.02 >= totalDuration) {
+            if (elapsedSec + 0.001 >= totalDuration) {
                 setIsComplete(true);
                 setElapsedTotal(totalDuration);
                 return;
@@ -158,15 +184,23 @@ export default function BreathingExercise({ variant, accent, onComplete, onCance
                 return;
             }
 
+            const phaseMeta = pattern.phases[pos.phaseIdx];
+            const phaseDur = phaseMeta.duration;
+            const elapsedInPhase = pos.progress * phaseDur;
+
             setCurrentCycle(pos.cycle);
             setCurrentPhaseIdx(pos.phaseIdx);
-            setPhaseElapsed(pos.progress * pattern.phases[pos.phaseIdx].duration);
+            setPhaseElapsed(elapsedInPhase);
+
+            raf = requestAnimationFrame(pump);
         };
 
+        /* First tick runs immediately so the orb moves on the same frame as "Begin". */
         pump();
-        const id = window.setInterval(pump, tickMs);
 
-        return () => clearInterval(id);
+        return () => {
+            if (raf) cancelAnimationFrame(raf);
+        };
     }, [started, isComplete, pattern, totalDuration]);
 
     useEffect(() => {
@@ -183,17 +217,7 @@ export default function BreathingExercise({ variant, accent, onComplete, onCance
 
     const phaseProgress = phaseDuration > 0 ? phaseElapsed / phaseDuration : 0;
 
-    const getScale = (): number => {
-        if (!started || isComplete) return 0.6;
-        const ph = currentPhase?.phase;
-        if (ph === 'inhale') return 0.6 + 0.4 * phaseProgress;
-        if (ph === 'hold-in') return 1.0;
-        if (ph === 'exhale') return 1.0 - 0.4 * phaseProgress;
-        if (ph === 'hold-out') return 0.6;
-        return 0.6;
-    };
-
-    const scale = getScale();
+    const scale = !started || isComplete ? ORB_MIN + 0.08 : breathOrbScale(currentPhase?.phase, phaseProgress);
     const progressPercent = totalDuration > 0 ? (elapsedTotal / totalDuration) * 100 : 0;
     const remainingSeconds = Math.max(0, Math.ceil(totalDuration - elapsedTotal));
     const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
@@ -343,30 +367,29 @@ export default function BreathingExercise({ variant, accent, onComplete, onCance
                         width: 140,
                         height: 140,
                         transform: `translate(-50%, -50%) scale(${scale})`,
-                        transition: 'transform 0.08s linear',
                         borderRadius: '50%',
-                        background: `radial-gradient(circle at 40% 40%, ${accent}50, ${accent}15 60%, transparent 80%)`,
-                        boxShadow: `0 0 ${30 + scale * 30}px ${accent}30, inset 0 0 40px ${accent}10`,
+                        willChange: 'transform',
+                        background: `radial-gradient(circle at 40% 40%, ${accent}55, ${accent}18 58%, transparent 82%)`,
+                        boxShadow: `0 0 ${28 + scale * 42}px ${accent}45, 0 0 ${12 + scale * 20}px ${accent}25, inset 0 0 48px ${accent}12`,
                     }}
                 >
                     <div
                         style={{
                             position: 'absolute',
-                            inset: 12,
+                            inset: 10,
                             borderRadius: '50%',
-                            border: `1.5px solid ${accent}40`,
-                            transform: `scale(${0.85 + (scale - 0.6) * 0.2})`,
-                            transition: 'transform 0.08s linear',
+                            border: `2px solid ${accent}45`,
+                            opacity: 0.45 + scale * 0.35,
+                            transform: `scale(${0.88 + (scale - ORB_MIN) * 0.28})`,
                         }}
                     />
                     <div
                         style={{
                             position: 'absolute',
-                            inset: 30,
+                            inset: 28,
                             borderRadius: '50%',
-                            background: `radial-gradient(circle, ${accent}30, transparent 70%)`,
-                            transform: `scale(${0.7 + (scale - 0.6) * 0.5})`,
-                            transition: 'transform 0.08s linear',
+                            background: `radial-gradient(circle, ${accent}35, transparent 72%)`,
+                            transform: `scale(${0.72 + (scale - ORB_MIN) * 0.55})`,
                         }}
                     />
                 </div>
