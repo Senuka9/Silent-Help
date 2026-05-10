@@ -399,11 +399,18 @@ export default function DashboardPage() {
                         borderRadius: 12,
                         fontSize: 12,
                       }}
-                      formatter={(value: number | undefined, _name: string, item: { payload?: { hasData?: boolean } }) =>
-                        item?.payload?.hasData === false || value == null
-                          ? ['No check-in', 'Mood']
-                          : [Number(value).toFixed(1), 'Avg intensity']
-                      }
+                      formatter={(value, _name, item) => {
+                        const p = item?.payload as { hasData?: boolean } | undefined;
+                        if (p?.hasData === false || value == null) {
+                          return ['No check-in', 'Mood'];
+                        }
+                        const n =
+                          typeof value === 'number' ? value : Number(String(value));
+                        if (Number.isNaN(n)) {
+                          return ['No check-in', 'Mood'];
+                        }
+                        return [n.toFixed(1), 'Avg intensity'];
+                      }}
                     />
                     <Area
                       type="monotone"
