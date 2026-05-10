@@ -9,6 +9,7 @@ import {
     createFutureLetter,
     type FutureLetter,
 } from '@/lib/api';
+import { daysUntilLetterOpens, formatLetterDeliveryDate } from '@/lib/letter-utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { recordActivity } from '@/lib/streak';
 import { Button } from '@/components/ui/button';
@@ -22,19 +23,6 @@ const DELIVERY_OPTIONS = [
     { days: 180, label: '6 months' },
     { days: 365, label: '1 year' },
 ];
-
-function formatDeliveryDate(iso: string) {
-    return new Date(iso).toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-    });
-}
-
-function daysUntil(iso: string): number {
-    const ms = new Date(iso).getTime() - Date.now();
-    return Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)));
-}
 
 export default function LettersPage() {
     const [letters, setLetters] = useState<FutureLetter[]>([]);
@@ -69,7 +57,7 @@ export default function LettersPage() {
             setContent('');
             recordActivity();
             toast.success('Sealed', {
-                description: `Your letter waits for you on ${formatDeliveryDate(res.letter.deliverAt)}.`,
+                description: `Your letter waits for you on ${formatLetterDeliveryDate(res.letter.deliverAt)}.`,
             });
         } catch (err) {
             console.error(err);
@@ -81,9 +69,25 @@ export default function LettersPage() {
 
     const delivered = letters.filter((l) => l.delivered);
     const sealed = letters.filter((l) => !l.delivered);
+    const unlocksToday = sealed.filter((l) => daysUntilLetterOpens(l.deliverAt) === 0);
 
     return (
         <div className="mx-auto max-w-3xl px-6 pt-6 sm:px-10">
+            {unlocksToday.length > 0 && (
+                <motion.div
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-6 rounded-2xl border border-violet-400/30 bg-violet-500/10 px-4 py-3 text-sm text-[color:var(--color-fg)]"
+                >
+                    <span className="font-medium">
+                        {unlocksToday.length === 1
+                            ? 'One sealed letter unlocks today.'
+                            : `${unlocksToday.length} sealed letters unlock today.`}{' '}
+                    </span>
+                    Scroll to <strong>Sealed — waiting</strong> — after midnight (your time) the text will appear under{' '}
+                    <strong>Delivered</strong>.
+                </motion.div>
+            )}
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -195,7 +199,7 @@ export default function LettersPage() {
                                     <Card key={l.id}>
                                         <CardContent className="p-5">
                                             <div className="text-[11px] uppercase tracking-wider text-[color:var(--color-fg-subtle)]">
-                                                Opened {formatDeliveryDate(l.deliverAt)}
+                                                Opened {formatLetterDeliveryDate(l.deliverAt)}
                                             </div>
                                             <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">
                                                 {l.content}
@@ -225,12 +229,12 @@ export default function LettersPage() {
                                             <div className="flex-1">
                                                 <div className="text-sm font-medium">Letter to future you</div>
                                                 <div className="text-xs text-[color:var(--color-fg-subtle)]">
-                                                    Opens {formatDeliveryDate(l.deliverAt)}
+                                                    Opens {formatLetterDeliveryDate(l.deliverAt)}
                                                 </div>
                                             </div>
                                             <div className="inline-flex items-center gap-1.5 text-xs text-[color:var(--color-fg-muted)]">
                                                 <Clock className="h-3.5 w-3.5" />
-                                                {daysUntil(l.deliverAt)} days
+                                                {daysUntilLetterOpens(l.deliverAt)} days
                                             </div>
                                         </CardContent>
                                     </Card>

@@ -13,6 +13,7 @@ import {
   LifeBuoy,
   MessageSquare,
   Play,
+  Mail,
   Sparkles,
   Wind,
 } from 'lucide-react';
@@ -27,13 +28,16 @@ import {
   getMoodHistory,
   getWeeklyDigest,
   getDailyAffirmation,
+  listFutureLetters,
   listJournalEntries,
   logMood,
   suggestCoachAction,
   type CoachSuggestion,
+  type FutureLetter,
   type MoodLog,
   type WeeklyDigest,
 } from '@/lib/api';
+import { daysUntilLetterOpens, formatLetterDeliveryDate } from '@/lib/letter-utils';
 import { toast } from 'sonner';
 import { recordActivity, getStreak } from '@/lib/streak';
 import {
@@ -78,6 +82,9 @@ export default function DashboardPage() {
   const [coach, setCoach] = useState<CoachSuggestion | null>(null);
   const [coachLoading, setCoachLoading] = useState(true);
   const [affirmation, setAffirmation] = useState<string | null>(null);
+  const [lettersLoading, setLettersLoading] = useState(true);
+  const [nextSealedLetter, setNextSealedLetter] = useState<FutureLetter | null>(null);
+  const [sealedLetterCount, setSealedLetterCount] = useState(0);
   const loadedRef = useRef(false);
 
   useEffect(() => {
@@ -91,10 +98,16 @@ export default function DashboardPage() {
     Promise.all([
       getMoodHistory({ days: 21 }).catch(() => ({ logs: [] as MoodLog[] })),
       listJournalEntries().catch(() => ({ entries: [] as { id: string }[] })),
-    ]).then(([m, j]) => {
+      listFutureLetters().catch(() => ({ letters: [] as FutureLetter[] })),
+    ]).then(([m, j, L]) => {
       setMoodLogs(m.logs ?? []);
       setJournalCount(Array.isArray(j.entries) ? j.entries.length : 0);
-    });
+      const sealed = (L.letters ?? [])
+        .filter((x) => !x.delivered)
+        .sort((a, b) => new Date(a.deliverAt).getTime() - new Date(b.deliverAt).getTime());
+      setNextSealedLetter(sealed[0] ?? null);
+      setSealedLetterCount(sealed.length);
+    }).finally(() => setLettersLoading(false));
     // Defer AI-backed calls so they don't block initial render or navigation.
     const aiTimer = window.setTimeout(() => {
       getWeeklyDigest()
@@ -423,6 +436,89 @@ export default function DashboardPage() {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Future letter — reminder */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.18 }}
+          className="lg:col-span-2"
+        >
+          <Card className="h-full">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-[color:var(--color-fg-subtle)]">
+                    Future you
+                  </div>
+                  <CardTitle className="mt-1.5">Sealed letter</CardTitle>
+                </div>
+                <Mail className="h-5 w-5 opacity-80" style={{ color: theme.accent }} />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {lettersLoading ? (
+                <Skeleton className="h-14 w-full rounded-xl" />
+              ) : sealedLetterCount === 0 ? (
+                <>
+                  <p className="text-sm text-[color:var(--color-fg-muted)]">
+                    Seal a goal or kind note — your future self opens it on the day you choose.
+                  </p>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => router.push('/letters')}
+                  >
+                    Write a letter
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {nextSealedLetter && (
+                    <p className="text-sm text-[color:var(--color-fg-muted)]">
+                      {(() => {
+                        const d = daysUntilLetterOpens(nextSealedLetter.deliverAt);
+                        if (d === 0) {
+                          return (
+                            <>
+                              A letter unlocks{' '}
+                              <span className="font-medium text-[color:var(--color-fg)]">today</span>{' '}
+                              ({formatLetterDeliveryDate(nextSealedLetter.deliverAt)}).
+                            </>
+                          );
+                        }
+                        return (
+                          <>
+                            Next unlocks in{' '}
+                            <span className="font-medium text-[color:var(--color-fg)]">
+                              {d} day{d === 1 ? '' : 's'}
+                            </span>
+                            {' · '}
+                            {formatLetterDeliveryDate(nextSealedLetter.deliverAt)}
+                          </>
+                        );
+                      })()}
+                    </p>
+                  )}
+                  {sealedLetterCount > 1 && (
+                    <p className="text-xs text-[color:var(--color-fg-subtle)]">
+                      {sealedLetterCount} sealed in total
+                    </p>
+                  )}
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => router.push('/letters')}
+                  >
+                    Open letters
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
         </motion.div>

@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'img.clerk.com', pathname: '/**' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com', pathname: '/**' },
+      { protocol: 'https', hostname: 'lh4.googleusercontent.com', pathname: '/**' },
+    ],
+  },
   // On-device AI (@huggingface/transformers) runs only in the browser (WebGPU/WASM).
   // Exclude it + its heavy native deps from Vercel serverless function traces
   // so we stay well under the 250 MB uncompressed limit.
@@ -38,7 +45,7 @@ const nextConfig: NextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://*.clerk.accounts.dev",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https://*.clerk.com https://img.clerk.com",
+              "img-src 'self' data: blob: https://*.clerk.com https://img.clerk.com https://*.googleusercontent.com",
               "connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com " +
                 (process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"),
               "frame-src 'self' https://challenges.cloudflare.com https://*.clerk.accounts.dev",

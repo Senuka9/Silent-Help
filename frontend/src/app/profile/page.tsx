@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useUser, SignOutButton } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import {
   AreaChart,
@@ -21,6 +22,7 @@ import {
   HeartPulse,
   LogOut,
   MessageCircle,
+  Mail,
   RefreshCw,
   ShieldCheck,
   Sparkles,
@@ -36,12 +38,15 @@ import {
   getMoodHistory,
   getWellnessProfile,
   listConversations,
+  listFutureLetters,
   listMemories,
   type ConversationPreview,
+  type FutureLetter,
   type Memory,
   type MoodLog,
   type WellnessProfile,
 } from '@/lib/api';
+import { daysUntilLetterOpens, formatLetterDeliveryDate } from '@/lib/letter-utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -67,6 +72,9 @@ export default function ProfilePage() {
   const [sessions, setSessions] = useState<ConversationPreview[]>([]);
   const [memories, setMemories] = useState<Memory[]>([]);
   const [memoriesLoading, setMemoriesLoading] = useState(false);
+  const [letters, setLetters] = useState<FutureLetter[]>([]);
+  const [lettersLoading, setLettersLoading] = useState(false);
+  const [avatarBroken, setAvatarBroken] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -81,6 +89,19 @@ export default function ProfilePage() {
       setMemoriesLoading(false);
     }
   };
+
+  const loadLetters = useCallback(async () => {
+    setLettersLoading(true);
+    try {
+      const { letters: rows } = await listFutureLetters();
+      setLetters(rows ?? []);
+    } catch (e) {
+      console.error(e);
+      toast.error('Could not load letters', { description: (e as Error).message });
+    } finally {
+      setLettersLoading(false);
+    }
+  }, []);
 
   const handleForget = async (id: string) => {
     try {
@@ -164,7 +185,11 @@ export default function ProfilePage() {
     [moods],
   );
 
-  const initials = (user?.firstName?.[0] ?? '') + (user?.lastName?.[0] ?? '');
+  const initials =
+    (user?.firstName?.[0] ?? user?.username?.[0] ?? user?.emailAddresses?.[0]?.emailAddress?.[0] ?? '?').toUpperCase() +
+    (user?.lastName?.[0] ?? '').toUpperCase();
+  const avatarUrl = user?.imageUrl;
+  const showAvatar = Boolean(avatarUrl) && !avatarBroken;
 
   if (loading) {
     return (
@@ -198,13 +223,31 @@ export default function ProfilePage() {
             style={{ background: 'radial-gradient(circle, #a78bfa33, transparent 70%)' }}
           />
           <CardContent className="relative flex flex-col items-start gap-6 p-8 sm:flex-row sm:items-center sm:p-10">
-            <div
-              className="flex h-20 w-20 items-center justify-center rounded-3xl border border-white/10 text-2xl font-semibold"
-              style={{
-                background: 'linear-gradient(135deg, rgba(125,211,252,0.2), rgba(167,139,250,0.2))',
-              }}
-            >
-              {initials || <UserRound className="h-8 w-8" />}
+            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04]">
+              {showAvatar ? (
+                <Image
+                  src={avatarUrl as string}
+                  alt={user?.fullName || user?.username || 'Profile photo'}
+                  width={80}
+                  height={80}
+                  className="h-full w-full object-cover"
+                  sizes="80px"
+                  onError={() => setAvatarBroken(true)}
+                />
+              ) : (
+                <div
+                  className="flex h-full w-full items-center justify-center text-2xl font-semibold"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(125,211,252,0.2), rgba(167,139,250,0.2))',
+                  }}
+                >
+                  {initials.trim() ? (
+                    initials
+                  ) : (
+                    <UserRound className="h-8 w-8 text-[color:var(--color-fg-muted)]" />
+                  )}
+                </div>
+              )}
             </div>
             <div className="flex-1">
               <div className="text-xs uppercase tracking-[0.2em] text-[color:var(--color-fg-subtle)]">
@@ -241,8 +284,14 @@ export default function ProfilePage() {
 
       {/* Tabs */}
       <div className="mt-8">
-        <Tabs defaultValue="wellness">
-          <TabsList>
+        <Tabs
+          defaultValue="wellness"
+          onValueChange={(tab) => {
+            if (tab === 'letters') void loadLetters();
+            if (tab === 'privacy') void loadMemories();
+          }}
+        >
+          <TabsList className="flex h-auto min-h-10 flex-wrap gap-1">
             <TabsTrigger value="wellness">
               <HeartPulse className="mr-2 h-4 w-4" /> Wellness
             </TabsTrigger>
@@ -252,7 +301,10 @@ export default function ProfilePage() {
             <TabsTrigger value="sessions">
               <MessageCircle className="mr-2 h-4 w-4" /> Sessions
             </TabsTrigger>
-            <TabsTrigger value="privacy" onClick={loadMemories}>
+            <TabsTrigger value="letters">
+              <Mail className="mr-2 h-4 w-4" /> Letters
+            </TabsTrigger>
+            <TabsTrigger value="privacy">
               <ShieldCheck className="mr-2 h-4 w-4" /> Privacy
             </TabsTrigger>
           </TabsList>
@@ -423,6 +475,94 @@ export default function ProfilePage() {
                         </div>
                       </button>
                     ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="letters" className="mt-6 space-y-5">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <h3 className="flex items-center gap-2 text-sm font-semibold tracking-tight">
+                      <Mail className="h-4 w-4 text-[color:var(--color-accent)]" />
+                      Letters to future you
+                    </h3>
+                    <p className="mt-1 text-xs text-[color:var(--color-fg-muted)]">
+                      Seal encouragement or goals now — they unlock on the date you pick. Encrypted until then.
+                    </p>
+                  </div>
+                  <Button variant="primary" size="sm" onClick={() => router.push('/letters')}>
+                    Write or manage letters
+                  </Button>
+                </div>
+
+                {lettersLoading && (
+                  <div className="mt-6 space-y-2">
+                    <Skeleton className="h-16 w-full rounded-xl" />
+                    <Skeleton className="h-16 w-full rounded-xl" />
+                  </div>
+                )}
+
+                {!lettersLoading && letters.length === 0 && (
+                  <p className="mt-6 text-sm text-[color:var(--color-fg-muted)]">
+                    You have not sealed a letter yet. When you do, it will show here — and on your dashboard when it is almost time.
+                  </p>
+                )}
+
+                {!lettersLoading && letters.length > 0 && (
+                  <div className="mt-6 space-y-6">
+                    {letters.filter((l) => !l.delivered).length > 0 && (
+                      <div>
+                        <h4 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[color:var(--color-fg-subtle)]">
+                          Sealed — waiting
+                        </h4>
+                        <div className="mt-3 space-y-2">
+                          {letters
+                            .filter((l) => !l.delivered)
+                            .map((l) => (
+                              <div
+                                key={l.id}
+                                className="flex flex-col gap-1 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                              >
+                                <div className="text-sm font-medium">Opens {formatLetterDeliveryDate(l.deliverAt)}</div>
+                                <div className="text-xs text-[color:var(--color-fg-muted)]">
+                                  {daysUntilLetterOpens(l.deliverAt) === 0
+                                    ? 'Opens today'
+                                    : `${daysUntilLetterOpens(l.deliverAt)} days to go`}
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {letters.filter((l) => l.delivered).length > 0 && (
+                      <div>
+                        <h4 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[color:var(--color-fg-subtle)]">
+                          Delivered
+                        </h4>
+                        <div className="mt-3 space-y-3">
+                          {letters
+                            .filter((l) => l.delivered)
+                            .map((l) => (
+                              <div
+                                key={l.id}
+                                className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3"
+                              >
+                                <div className="text-[11px] uppercase tracking-wider text-[color:var(--color-fg-subtle)]">
+                                  Unlocked {formatLetterDeliveryDate(l.deliverAt)}
+                                </div>
+                                <p className="mt-2 line-clamp-4 whitespace-pre-wrap text-sm leading-relaxed text-[color:var(--color-fg-muted)]">
+                                  {l.content || '—'}
+                                </p>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
